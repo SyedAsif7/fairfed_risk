@@ -1,6 +1,7 @@
 """
-FairFed Risk - Flower Federated Client
-Hospital client implementation with masked multi-task loss and proximal regularization (FedProx).
+FairFed Risk - Flower Federated Client with Differential Privacy (DP-SGD)
+Hospital client implementation with masked multi-task loss, proximal regularization (FedProx),
+Opacus differential privacy engine, and privacy accountant.
 """
 
 from __future__ import annotations
@@ -10,6 +11,7 @@ import numpy as np
 import torch
 import torch.optim as optim
 import flwr as fl
+from opacus import PrivacyEngine
 
 from src.models.multitask_mlp import MultiTaskRiskMLP, MaskedMultiTaskLoss, compute_pos_weights
 from src.data.partition import HospitalData
@@ -23,6 +25,8 @@ class HospitalFlowerClient(fl.client.NumPyClient):
     Supports:
       - Masked multi-task loss over observed modalities
       - Proximal term for FedProx: (mu / 2) * ||theta - theta^t||^2
+      - Differential privacy via Opacus DP-SGD (per-sample clipping + Gaussian noise)
+      - Dynamic privacy accounting (epsilon, delta)
       - Fairness regularization hooks
     """
 
@@ -35,6 +39,9 @@ class HospitalFlowerClient(fl.client.NumPyClient):
         weight_decay: float = 1e-4,
         mu: float = 0.0,
         fairness_penalty_lambda: float = 0.0,
+        noise_multiplier: float = 0.0,
+        max_grad_norm: float = 1.0,
+        delta: float = 1e-5,
         device: torch.device = torch.device("cpu"),
     ):
         super().__init__()
@@ -46,10 +53,14 @@ class HospitalFlowerClient(fl.client.NumPyClient):
         self.weight_decay = weight_decay
         self.mu = mu
         self.fairness_penalty_lambda = fairness_penalty_lambda
+        self.noise_multiplier = float(noise_multiplier)
+        self.max_grad_norm = float(max_grad_norm)
+        self.delta = float(delta)
 
         # Initialize local model
         kwargs = model_kwargs or {"input_dim": 7, "hidden_dim1": 64, "hidden_dim2": 32}
-        self.model = MultiTaskRiskMLP(**kwargs).to(self.device)
+        self.raw_model = MultiTaskRiskMLP(**kwargs).to(self.device)
+        self.model = self.raw_model
 
         # Build data loaders
         self.train_loader, self.test_loader = build_dataloaders(
@@ -63,35 +74,55 @@ class HospitalFlowerClient(fl.client.NumPyClient):
         )
         self.criterion = MaskedMultiTaskLoss(pos_weights=pos_w.to(self.device))
 
+        # Local optimizer
+        self.optimizer = optim.Adam(self.model.parameters(), lr=lr, weight_decay=self.weight_decay)
+
+        # DP-SGD Privacy Engine setup
+        self.privacy_engine: Optional[PrivacyEngine] = None
+        self.is_dp = self.noise_multiplier > 0.0
+        if self.is_dp:
+            self.privacy_engine = PrivacyEngine(secure_mode=False)
+            self.model, self.optimizer, self.train_loader = self.privacy_engine.make_private(
+                module=self.model,
+                optimizer=self.optimizer,
+                data_loader=self.train_loader,
+                noise_multiplier=self.noise_multiplier,
+                max_grad_norm=self.max_grad_norm,
+            )
+
+    def _get_underlying_model(self) -> torch.nn.Module:
+        """Returns unwrapped PyTorch module for direct parameter access."""
+        if self.is_dp and hasattr(self.model, "_module"):
+            return self.model._module
+        return self.model
+
     def get_parameters(self, config: Dict[str, Any]) -> List[np.ndarray]:
-        """Extracts model weights as a list of NumPy arrays (cloned copies)."""
-        return [val.detach().cpu().numpy().copy() for val in self.model.state_dict().values()]
+        """Extracts model weights as cloned NumPy arrays."""
+        underlying = self._get_underlying_model()
+        return [val.detach().cpu().numpy().copy() for val in underlying.state_dict().values()]
 
     def set_parameters(self, parameters: List[np.ndarray]) -> None:
         """Sets model weights from a list of NumPy arrays."""
+        underlying = self._get_underlying_model()
         state_dict = OrderedDict()
-        for key, param in zip(self.model.state_dict().keys(), parameters):
+        for key, param in zip(underlying.state_dict().keys(), parameters):
             state_dict[key] = torch.tensor(param, device=self.device)
-        self.model.load_state_dict(state_dict, strict=True)
+        underlying.load_state_dict(state_dict, strict=True)
 
     def fit(
         self, parameters: List[np.ndarray], config: Dict[str, Any]
     ) -> Tuple[List[np.ndarray], int, Dict[str, Any]]:
-        """
-        Local client training round.
-        """
+        """Local client training round with optional FedProx and DP-SGD."""
         self.set_parameters(parameters)
+        underlying = self._get_underlying_model()
         self.model.train()
 
         # Capture global weights theta^t for FedProx proximal loss
-        global_params = [p.clone().detach() for p in self.model.parameters()]
+        global_params = [p.clone().detach() for p in underlying.parameters()]
 
         # Config overrides
         epochs = config.get("local_epochs", 2)
         mu = config.get("mu", self.mu)
-        lr = config.get("lr", self.lr)
-
-        optimizer = optim.Adam(self.model.parameters(), lr=lr, weight_decay=self.weight_decay)
 
         epoch_losses = []
         for _ in range(epochs):
@@ -101,24 +132,23 @@ class HospitalFlowerClient(fl.client.NumPyClient):
                 y = y.to(self.device)
                 mask = mask.to(self.device)
 
-                optimizer.zero_grad()
-                logits = self.model.forward_logits(x)
+                self.optimizer.zero_grad()
+                logits = underlying.forward_logits(x)
                 task_loss = self.criterion(logits, y, mask)
 
-                # FedProx Proximal Regularization: (mu / 2) * ||theta - theta^t||^2
+                # FedProx Proximal Regularization
                 if mu > 0.0:
                     prox_loss = 0.0
-                    for param, g_param in zip(self.model.parameters(), global_params):
+                    for param, g_param in zip(underlying.parameters(), global_params):
                         prox_loss += torch.sum((param - g_param) ** 2)
                     loss = task_loss + (mu / 2.0) * prox_loss
                 else:
                     loss = task_loss
 
-                # Optional In-Processing Fairness Regularizer (used in Phase 5)
+                # Fairness Penalty
                 if self.fairness_penalty_lambda > 0.0:
                     probs = torch.sigmoid(logits)
                     sex_attr = sensitive[:, 0].to(self.device).float()
-                    # Penalize absolute covariance between predicted probabilities and sensitive group
                     fair_loss = 0.0
                     for k in range(probs.shape[1]):
                         obs_k = mask[:, k] == 1
@@ -130,18 +160,29 @@ class HospitalFlowerClient(fl.client.NumPyClient):
                     loss = loss + self.fairness_penalty_lambda * fair_loss
 
                 loss.backward()
-                optimizer.step()
+                self.optimizer.step()
                 batch_losses.append(loss.item())
 
             epoch_losses.append(float(np.mean(batch_losses)))
 
-        num_samples = len(self.train_loader.dataset)
+        num_samples = len(self.hospital_data.train_x)
         avg_loss = float(np.mean(epoch_losses)) if epoch_losses else 0.0
+
+        # Current cumulative privacy budget spent
+        if self.is_dp and self.privacy_engine is not None:
+            eps_spent = float(self.privacy_engine.get_epsilon(delta=self.delta))
+        else:
+            eps_spent = float("inf")
 
         return (
             self.get_parameters(config={}),
             num_samples,
-            {"train_loss": avg_loss, "hospital_id": self.hid},
+            {
+                "train_loss": avg_loss,
+                "hospital_id": self.hid,
+                "epsilon_spent": eps_spent,
+                "delta": self.delta if self.is_dp else 0.0,
+            },
         )
 
     def evaluate(
@@ -149,8 +190,9 @@ class HospitalFlowerClient(fl.client.NumPyClient):
     ) -> Tuple[float, int, Dict[str, Any]]:
         """Evaluates model on local held-out test partition."""
         self.set_parameters(parameters)
-        metrics = evaluate_torch_model(self.model, self.test_loader, device=self.device)
-        num_samples = len(self.test_loader.dataset)
+        underlying = self._get_underlying_model()
+        metrics = evaluate_torch_model(underlying, self.test_loader, device=self.device)
+        num_samples = len(self.hospital_data.test_x)
         loss = metrics["macro"].get("brier", 0.0)
         return float(loss), num_samples, {
             "auroc": float(metrics["macro"].get("auroc", 0.0)),

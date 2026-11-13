@@ -1,7 +1,7 @@
 """
 FairFed Risk - Federated Server Simulation Engine
 Manages round-by-round federated training, communication, client sampling,
-and global evaluation across heterogeneous hospital nodes.
+differential privacy accounting, and global evaluation across heterogeneous hospital nodes.
 """
 
 from __future__ import annotations
@@ -16,6 +16,7 @@ from src.federated.client import HospitalFlowerClient
 from src.federated.strategies import aggregate_weights, evaluate_global_model
 from src.data.partition import HospitalData, get_centralized_dataset
 from src.data.dataset import ClinicalMultiTaskDataset
+from src.privacy.accountant import PrivacyAccountant
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
 logger = logging.getLogger(__name__)
@@ -24,7 +25,7 @@ logger = logging.getLogger(__name__)
 class FederatedSimulationServer:
     """
     Federated Orchestrator for FairFed Risk experiments.
-    Executes reproducible simulation across simulated clinical sites.
+    Executes reproducible simulation across simulated clinical sites with Differential Privacy.
     """
 
     def __init__(
@@ -38,6 +39,9 @@ class FederatedSimulationServer:
         mu: float = 0.0,  # FedProx proximal coefficient
         fairfed_beta: float = 0.0,  # FairFed aggregation step size
         fairness_penalty_lambda: float = 0.0,  # In-processing client loss penalty
+        target_epsilon: float = float("inf"),  # DP target epsilon
+        max_grad_norm: float = 1.0,
+        delta: float = 1e-5,
         device: torch.device = torch.device("cpu"),
         random_seed: int = 42,
     ):
@@ -50,8 +54,33 @@ class FederatedSimulationServer:
         self.mu = mu if self.strategy_name == "fedprox" else 0.0
         self.fairfed_beta = fairfed_beta
         self.fairness_penalty_lambda = fairness_penalty_lambda
+        self.target_epsilon = target_epsilon
+        self.max_grad_norm = max_grad_norm
+        self.delta = delta
         self.device = device
         self.random_seed = random_seed
+
+        # Calibrate noise multiplier for target epsilon if private
+        avg_train_n = float(np.mean([p.n_train for p in hospital_partitions.values()]))
+        sample_rate = float(np.clip(batch_size / max(avg_train_n, 1.0), 0.01, 1.0))
+        steps_per_client = num_rounds * local_epochs * int(np.ceil(avg_train_n / batch_size))
+
+        if target_epsilon < float("inf") and target_epsilon > 0:
+            self.noise_multiplier = PrivacyAccountant.calibrate_noise_multiplier(
+                target_epsilon=target_epsilon,
+                target_delta=delta,
+                sample_rate=sample_rate,
+                total_steps=steps_per_client,
+            )
+            logger.info(
+                "Calibrated DP-SGD: Target eps=%.2f (delta=%.1e) -> noise_multiplier=%.4f (steps=%d)",
+                target_epsilon,
+                delta,
+                self.noise_multiplier,
+                steps_per_client,
+            )
+        else:
+            self.noise_multiplier = 0.0
 
         # Global evaluation dataset assembled across all test partitions
         tr_x, tr_y, tr_m, tr_s, te_x, te_y, te_m, te_s = get_centralized_dataset(hospital_partitions)
@@ -74,6 +103,9 @@ class FederatedSimulationServer:
                 lr=lr,
                 mu=self.mu,
                 fairness_penalty_lambda=self.fairness_penalty_lambda,
+                noise_multiplier=self.noise_multiplier,
+                max_grad_norm=self.max_grad_norm,
+                delta=delta,
                 device=device,
             )
 
@@ -82,26 +114,26 @@ class FederatedSimulationServer:
         self.client_sample_weights = {
             hid: p.n_train / total_train_samples for hid, p in hospital_partitions.items()
         }
-        # For FairFed dynamic weights
         self.dynamic_client_weights = self.client_sample_weights.copy()
 
     def run(self) -> Dict[str, Any]:
-        """
-        Executes the federated communication rounds.
-        """
+        """Executes federated communication rounds."""
         logger.info(
-            "Starting Federated Simulation: Strategy=%s | Rounds=%d | Local Epochs=%d | mu=%.3f | FairFed Beta=%.3f",
+            "Starting Federated Simulation: Strategy=%s | Target Eps=%s | Rounds=%d | mu=%.3f",
             self.strategy_name,
+            str(self.target_epsilon),
             self.num_rounds,
-            self.local_epochs,
             self.mu,
-            self.fairfed_beta,
         )
 
         history: Dict[str, Any] = {
             "strategy": self.strategy_name,
+            "target_epsilon": self.target_epsilon if self.target_epsilon < float("inf") else "inf",
+            "noise_multiplier": self.noise_multiplier,
+            "delta": self.delta,
             "rounds": [],
             "train_loss": [],
+            "epsilon_spent": [],
             "global_auroc": [],
             "global_auprc": [],
             "global_brier": [],
@@ -112,7 +144,7 @@ class FederatedSimulationServer:
             "round_metrics": [],
         }
 
-        # Evaluate Round 0 (untrained initialization baseline)
+        # Evaluate Round 0 baseline
         init_eval = evaluate_global_model(
             self.global_model, self.global_parameters, self.global_test_loader, device=self.device
         )
@@ -133,6 +165,7 @@ class FederatedSimulationServer:
             client_params_list = []
             client_weights_list = []
             client_losses = []
+            client_epsilons = []
             client_eval_fairness: Dict[int, float] = {}
 
             # 1. Distribute global model to clients and train locally
@@ -143,6 +176,7 @@ class FederatedSimulationServer:
                 )
                 client_params_list.append(updated_params)
                 client_losses.append(fit_res["train_loss"])
+                client_epsilons.append(fit_res["epsilon_spent"])
 
                 # Determine aggregation weight
                 if self.strategy_name == "fairfed" and r > 1:
@@ -153,27 +187,21 @@ class FederatedSimulationServer:
 
                 # Local validation evaluation for FairFed reweighting
                 if self.strategy_name == "fairfed":
-                    _, _, eval_res = client.evaluate(updated_params, config={})
-                    # Local fairness assessment
-                    local_metrics = evaluate_torch_model(client.model, client.test_loader, device=self.device)
-                    # Average DPD gap on local test set
+                    local_metrics = evaluate_torch_model(client._get_underlying_model(), client.test_loader, device=self.device)
                     local_dpd = local_metrics["fairness"]["by_sex"]["macro_dpd"]
                     client_eval_fairness[hid] = local_dpd
 
             # 2. Server Aggregation
             self.global_parameters = aggregate_weights(client_params_list, client_weights_list)
 
-            # 3. FairFed Dynamic Weight Update for next round:
-            # w_k^{t+1} = w_k^t - beta * (F_k^t - avg(F^t))
+            # 3. FairFed Dynamic Weight Update
             if self.strategy_name == "fairfed" and client_eval_fairness:
                 avg_fairness = float(np.mean(list(client_eval_fairness.values())))
                 raw_weights = {}
                 for hid in self.clients.keys():
                     f_diff = client_eval_fairness[hid] - avg_fairness
-                    # If client's local unfairness is worse than average, reduce weight; if fairer, increase weight
                     new_w = max(self.dynamic_client_weights[hid] - self.fairfed_beta * f_diff, 0.01)
                     raw_weights[hid] = new_w
-                # Re-normalize weights to sum to 1.0
                 total_w = sum(raw_weights.values())
                 self.dynamic_client_weights = {hid: w / total_w for hid, w in raw_weights.items()}
 
@@ -183,6 +211,7 @@ class FederatedSimulationServer:
             )
 
             avg_train_loss = float(np.mean(client_losses))
+            max_eps_spent = float(np.max(client_epsilons)) if client_epsilons else float("inf")
             macro_auc = round_eval["macro"]["auroc"]
             macro_ap = round_eval["macro"]["auprc"]
             brier = round_eval["macro"]["brier"]
@@ -193,6 +222,7 @@ class FederatedSimulationServer:
 
             history["rounds"].append(r)
             history["train_loss"].append(avg_train_loss)
+            history["epsilon_spent"].append(max_eps_spent)
             history["global_auroc"].append(macro_auc)
             history["global_auprc"].append(macro_ap)
             history["global_brier"].append(brier)
@@ -204,14 +234,14 @@ class FederatedSimulationServer:
 
             if r % 3 == 0 or r == self.num_rounds:
                 logger.info(
-                    "Round %2d/%2d -> Train Loss: %.4f | Global AUROC: %.4f | AUPRC: %.4f | Sex DPD: %.4f | Age DPD: %.4f",
+                    "Round %2d/%2d -> Loss: %.4f | Eps: %s | AUROC: %.4f | AUPRC: %.4f | Sex DPD: %.4f",
                     r,
                     self.num_rounds,
                     avg_train_loss,
+                    f"{max_eps_spent:.2f}" if max_eps_spent < float("inf") else "inf",
                     macro_auc,
                     macro_ap,
                     sex_dpd,
-                    age_dpd,
                 )
 
         history["final_metrics"] = history["round_metrics"][-1]

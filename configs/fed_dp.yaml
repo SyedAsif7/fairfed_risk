@@ -1,0 +1,24 @@
+# FairFed Risk - Differential Privacy (DP-SGD) Experiment Configuration
+experiment_name: federated_differential_privacy
+
+federated:
+  strategy: fedprox
+  mu: 0.01
+  num_rounds: 15
+  local_epochs: 2
+  batch_size: 32
+  learning_rate: 0.003
+  device: cpu
+  random_seed: 42
+
+privacy:
+  delta: 1e-5
+  max_grad_norm: 1.0
+  epsilon_grid:
+    - 1.0       # High privacy regime (strict)
+    - 3.0       # Moderate privacy regime (balanced)
+    - 8.0       # Relaxed privacy regime (permissive)
+    - .inf      # Non-private baseline
+
+output_dir: results/metrics
+checkpoints_dir: results/checkpoints
