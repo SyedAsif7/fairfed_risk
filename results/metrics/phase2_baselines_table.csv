@@ -1,0 +1,8 @@
+Model,Trained_On,Tested_On,Macro_AUROC,Macro_AUPRC,Macro_Brier,Sex_DPD,Sex_EOD,Age_DPD,Age_EOD
+Centralized Pooled (Upper Bound),All 6 Hospitals (1669 patients),Global Held-Out Test (419 patients),0.9143,0.8778,0.115,0.3359,0.2509,0.2812,0.2571
+Local-Only: Hospital 0 (Cleveland Cardiology),Hospital 0 only,Global Held-Out Test (419 patients),0.6689,0.6691,0.206,0.1735,0.2188,0.2765,0.299
+Local-Only: Hospital 1 (Hungarian Cardiology),Hospital 1 only,Global Held-Out Test (419 patients),0.6608,0.6679,0.2121,0.1482,0.2499,0.2604,0.3323
+Local-Only: Hospital 2 (VA Long Beach & Alpine),Hospital 2 only,Global Held-Out Test (419 patients),0.6072,0.6242,0.2278,0.0246,0.0882,0.1332,0.218
+Local-Only: Hospital 3 (Apollo Nephrology),Hospital 3 only,Global Held-Out Test (419 patients),0.7804,0.7375,0.2132,0.1812,0.1364,0.4694,0.4405
+Local-Only: Hospital 4 (Southwest Metabolic / Pima),Hospital 4 only,Global Held-Out Test (419 patients),0.6155,0.6092,0.2369,0.0788,0.0975,0.1829,0.2121
+Local-Only: Hospital 5 (Metro Community General),Hospital 5 only,Global Held-Out Test (419 patients),0.7853,0.7547,0.241,0.1477,0.1508,0.2928,0.2627

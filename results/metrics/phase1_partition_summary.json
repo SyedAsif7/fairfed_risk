@@ -1,0 +1,184 @@
+{
+  "total_records": 2088,
+  "n_features": 7,
+  "features": [
+    "age",
+    "sex",
+    "bmi",
+    "bp_systolic",
+    "glucose",
+    "cholesterol",
+    "creatinine"
+  ],
+  "n_targets": 3,
+  "targets": [
+    "diabetes",
+    "heart_disease",
+    "ckd"
+  ],
+  "n_hospitals": 6,
+  "hospitals": {
+    "0": {
+      "name": "Hospital 0 (Cleveland Cardiology)",
+      "n_train": 242,
+      "n_test": 61,
+      "total": 303,
+      "train_observed_masks": {
+        "diabetes": 242,
+        "heart_disease": 242,
+        "ckd": 0
+      },
+      "train_positive_rates": {
+        "diabetes": 0.1487603336572647,
+        "heart_disease": 0.4586776793003082,
+        "ckd": 0.0
+      },
+      "test_observed_masks": {
+        "diabetes": 61,
+        "heart_disease": 61,
+        "ckd": 0
+      },
+      "sex_ratio_male_train": 0.7024793388429752,
+      "age_groups_train": {
+        "<45": 43,
+        "45-60": 139,
+        ">60": 60
+      }
+    },
+    "1": {
+      "name": "Hospital 1 (Hungarian Cardiology)",
+      "n_train": 235,
+      "n_test": 59,
+      "total": 294,
+      "train_observed_masks": {
+        "diabetes": 229,
+        "heart_disease": 235,
+        "ckd": 0
+      },
+      "train_positive_rates": {
+        "diabetes": 0.06986899673938751,
+        "heart_disease": 0.3574468195438385,
+        "ckd": 0.0
+      },
+      "test_observed_masks": {
+        "diabetes": 57,
+        "heart_disease": 59,
+        "ckd": 0
+      },
+      "sex_ratio_male_train": 0.7404255319148936,
+      "age_groups_train": {
+        "<45": 76,
+        "45-60": 154,
+        ">60": 5
+      }
+    },
+    "2": {
+      "name": "Hospital 2 (VA Long Beach & Alpine)",
+      "n_train": 258,
+      "n_test": 65,
+      "total": 323,
+      "train_observed_masks": {
+        "diabetes": 194,
+        "heart_disease": 258,
+        "ckd": 0
+      },
+      "train_positive_rates": {
+        "diabetes": 0.2989690601825714,
+        "heart_disease": 0.817829430103302,
+        "ckd": 0.0
+      },
+      "test_observed_masks": {
+        "diabetes": 47,
+        "heart_disease": 65,
+        "ckd": 0
+      },
+      "sex_ratio_male_train": 0.9418604651162791,
+      "age_groups_train": {
+        "<45": 19,
+        "45-60": 135,
+        ">60": 104
+      }
+    },
+    "3": {
+      "name": "Hospital 3 (Apollo Nephrology)",
+      "n_train": 240,
+      "n_test": 60,
+      "total": 300,
+      "train_observed_masks": {
+        "diabetes": 239,
+        "heart_disease": 239,
+        "ckd": 240
+      },
+      "train_positive_rates": {
+        "diabetes": 0.33472803235054016,
+        "heart_disease": 0.07949791103601456,
+        "ckd": 0.6416666507720947
+      },
+      "test_observed_masks": {
+        "diabetes": 60,
+        "heart_disease": 60,
+        "ckd": 60
+      },
+      "sex_ratio_male_train": 0.6708333333333333,
+      "age_groups_train": {
+        "<45": 63,
+        "45-60": 97,
+        ">60": 80
+      }
+    },
+    "4": {
+      "name": "Hospital 4 (Southwest Metabolic / Pima)",
+      "n_train": 440,
+      "n_test": 110,
+      "total": 550,
+      "train_observed_masks": {
+        "diabetes": 440,
+        "heart_disease": 0,
+        "ckd": 0
+      },
+      "train_positive_rates": {
+        "diabetes": 0.3499999940395355,
+        "heart_disease": 0.0,
+        "ckd": 0.0
+      },
+      "test_observed_masks": {
+        "diabetes": 110,
+        "heart_disease": 0,
+        "ckd": 0
+      },
+      "sex_ratio_male_train": 0.0,
+      "age_groups_train": {
+        "<45": 362,
+        "45-60": 60,
+        ">60": 18
+      }
+    },
+    "5": {
+      "name": "Hospital 5 (Metro Community General)",
+      "n_train": 254,
+      "n_test": 64,
+      "total": 318,
+      "train_observed_masks": {
+        "diabetes": 253,
+        "heart_disease": 82,
+        "ckd": 83
+      },
+      "train_positive_rates": {
+        "diabetes": 0.35573121905326843,
+        "heart_disease": 0.09756097197532654,
+        "ckd": 0.5542168617248535
+      },
+      "test_observed_masks": {
+        "diabetes": 64,
+        "heart_disease": 17,
+        "ckd": 17
+      },
+      "sex_ratio_male_train": 0.2204724409448819,
+      "age_groups_train": {
+        "<45": 168,
+        "45-60": 54,
+        ">60": 32
+      }
+    }
+  }
+}

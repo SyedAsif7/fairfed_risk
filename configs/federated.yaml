@@ -1,0 +1,19 @@
+# FairFed Risk - Federated Simulation Configuration (FedAvg & FedProx)
+experiment_name: federated_learning_simulation
+
+federated:
+  num_rounds: 15
+  local_epochs: 2
+  batch_size: 32
+  learning_rate: 0.003
+  device: cpu
+  random_seed: 42
+
+strategies:
+  - name: fedavg
+    mu: 0.0
+  - name: fedprox
+    mu: 0.01
+
+output_dir: results/metrics
+checkpoints_dir: results/checkpoints
