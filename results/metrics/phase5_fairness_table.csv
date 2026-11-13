@@ -1,0 +1,5 @@
+Mitigation_Strategy,Lambda_Fair,FairFed_Beta,Macro_AUROC,Macro_AUPRC,Macro_Brier,Sex_DPD,Sex_EOD,Age_DPD,Age_EOD
+FedProx (No Mitigation),0.0,0.0,0.8025,0.7648,0.1581,0.3047,0.3409,0.5227,0.5485
+Client Fairness Penalty (Loss),0.6,0.0,0.789,0.7571,0.1639,0.1331,0.1499,0.4616,0.5443
+Server Dynamic Reweighting (FairFed),0.0,1.0,0.5723,0.605,0.2157,0.124,0.2886,0.3041,0.4297
+Dual Mitigation (Loss + FairFed),0.6,1.0,0.7489,0.73,0.199,0.0571,0.1729,0.2923,0.3888

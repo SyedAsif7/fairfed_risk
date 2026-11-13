@@ -14,6 +14,7 @@ import torch.utils.data
 from src.models.multitask_mlp import MultiTaskRiskMLP
 from src.federated.client import HospitalFlowerClient
 from src.federated.strategies import aggregate_weights, evaluate_global_model
+from src.evaluation.evaluator import evaluate_torch_model
 from src.data.partition import HospitalData, get_centralized_dataset
 from src.data.dataset import ClinicalMultiTaskDataset
 from src.privacy.accountant import PrivacyAccountant
@@ -51,7 +52,7 @@ class FederatedSimulationServer:
         self.local_epochs = local_epochs
         self.batch_size = batch_size
         self.lr = lr
-        self.mu = mu if self.strategy_name == "fedprox" else 0.0
+        self.mu = float(mu)
         self.fairfed_beta = fairfed_beta
         self.fairness_penalty_lambda = fairness_penalty_lambda
         self.target_epsilon = target_epsilon

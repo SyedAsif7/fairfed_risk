@@ -1,0 +1,28 @@
+# FairFed Risk - Fairness Diagnostics & Mitigations Experiment Configuration
+experiment_name: fairness_mitigations_study
+
+federated:
+  num_rounds: 15
+  local_epochs: 2
+  batch_size: 32
+  learning_rate: 0.003
+  mu: 0.01  # FedProx proximal term
+  device: cpu
+  random_seed: 42
+
+mitigations:
+  - name: "FedProx (No Mitigation)"
+    lambda_fair: 0.0
+    fairfed_beta: 0.0
+  - name: "Client Fairness Penalty (Loss)"
+    lambda_fair: 0.6
+    fairfed_beta: 0.0
+  - name: "Server Dynamic Reweighting (FairFed)"
+    lambda_fair: 0.0
+    fairfed_beta: 1.0
+  - name: "Dual Mitigation (Loss + FairFed)"
+    lambda_fair: 0.6
+    fairfed_beta: 1.0
+
+output_dir: results/metrics
+checkpoints_dir: results/checkpoints
