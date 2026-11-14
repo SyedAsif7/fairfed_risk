@@ -1,0 +1,12 @@
+# Ignore python dependencies so Vercel does not trigger the python serverless builder
+requirements.txt
+pyproject.toml
+src/
+tests/
+data/
+report/
+mlruns/
+mlflow.db
+Dockerfile
+docker-compose.yml
+*.py

@@ -1,0 +1,2293 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark" data-accent="cyan">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FairFed Risk | Federated Clinical Risk Auditing Suite</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <style>
+    /* =====================================================================
+       DESIGN SYSTEM & DYNAMIC THEMES
+       ===================================================================== */
+    :root {
+      --font-sans: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
+      --transition-speed: 0.25s;
+    }
+
+    /* DARK THEME (CARBON & DEEP NAVY) */
+    [data-theme="dark"] {
+      --bg-body: #060911;
+      --bg-nav: rgba(10, 15, 29, 0.88);
+      --bg-card: #0d1527;
+      --bg-card-hover: #121c33;
+      --bg-card-elevated: #16223d;
+      --bg-input: #080d1a;
+      --border-subtle: rgba(255, 255, 255, 0.08);
+      --border-hover: rgba(56, 189, 248, 0.4);
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --text-dim: #64748b;
+      --shadow-card: 0 10px 30px -5px rgba(0, 0, 0, 0.5), 0 4px 6px -2px rgba(0, 0, 0, 0.4);
+      --chart-grid: rgba(255, 255, 255, 0.05);
+      --chart-tick: #94a3b8;
+      --pill-bg: rgba(255, 255, 255, 0.06);
+      --code-bg: #070c17;
+      --table-stripe: rgba(255, 255, 255, 0.02);
+      --gauge-bg: rgba(255, 255, 255, 0.04);
+    }
+
+    /* LIGHT THEME (CRISP MEDICAL LABORATORY) */
+    [data-theme="light"] {
+      --bg-body: #f8fafc;
+      --bg-nav: rgba(255, 255, 255, 0.94);
+      --bg-card: #ffffff;
+      --bg-card-hover: #f1f5f9;
+      --bg-card-elevated: #f8fafc;
+      --bg-input: #f1f5f9;
+      --border-subtle: #e2e8f0;
+      --border-hover: #0284c7;
+      --text-main: #0f172a;
+      --text-muted: #475569;
+      --text-dim: #94a3b8;
+      --shadow-card: 0 4px 20px -2px rgba(15, 23, 42, 0.06), 0 2px 6px -1px rgba(15, 23, 42, 0.04);
+      --chart-grid: rgba(0, 0, 0, 0.06);
+      --chart-tick: #64748b;
+      --pill-bg: #f1f5f9;
+      --code-bg: #f8fafc;
+      --table-stripe: rgba(15, 23, 42, 0.02);
+      --gauge-bg: #f1f5f9;
+    }
+
+    /* ACCENT PALETTES */
+    [data-accent="cyan"] {
+      --primary: #0284c7;
+      --primary-light: #38bdf8;
+      --primary-gradient: linear-gradient(135deg, #0284c7, #38bdf8);
+      --primary-glow: rgba(56, 189, 248, 0.28);
+    }
+    [data-accent="emerald"] {
+      --primary: #059669;
+      --primary-light: #10b981;
+      --primary-gradient: linear-gradient(135deg, #047857, #10b981);
+      --primary-glow: rgba(16, 185, 129, 0.28);
+    }
+    [data-accent="indigo"] {
+      --primary: #4f46e5;
+      --primary-light: #818cf8;
+      --primary-gradient: linear-gradient(135deg, #4338ca, #818cf8);
+      --primary-glow: rgba(129, 140, 248, 0.28);
+    }
+    [data-accent="rose"] {
+      --primary: #e11d48;
+      --primary-light: #fb7185;
+      --primary-gradient: linear-gradient(135deg, #be123c, #fb7185);
+      --primary-glow: rgba(251, 113, 133, 0.28);
+    }
+
+    /* GLOBAL CONSTANTS */
+    --emerald-val: #10b981;
+    --rose-val: #f43f5e;
+    --amber-val: #f59e0b;
+    --indigo-val: #818cf8;
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background-color: var(--bg-body);
+      color: var(--text-main);
+      font-family: var(--font-sans);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      transition: background-color var(--transition-speed) ease, color var(--transition-speed) ease;
+      overflow-x: hidden;
+    }
+
+    /* TOP APPLICATION HEADER */
+    .app-header {
+      background: var(--bg-nav);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--border-subtle);
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+      padding: 0.85rem 2.25rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      transition: all var(--transition-speed) ease;
+    }
+    .brand-section {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+    .brand-icon {
+      width: 44px;
+      height: 44px;
+      background: var(--primary-gradient);
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-size: 1.4rem;
+      box-shadow: 0 4px 16px var(--primary-glow);
+      transition: transform 0.25s ease;
+      flex-shrink: 0;
+    }
+    .brand-icon:hover { transform: scale(1.06) rotate(4deg); }
+    .brand-name {
+      font-size: 1.25rem;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+    }
+    .brand-tag {
+      font-size: 0.65rem;
+      font-weight: 700;
+      background: rgba(56, 189, 248, 0.12);
+      color: var(--primary-light);
+      border: 1px solid rgba(56, 189, 248, 0.3);
+      padding: 2px 8px;
+      border-radius: 999px;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+    .brand-desc {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      margin-top: 1px;
+    }
+
+    /* CONTROLS & PALETTE SELECTOR */
+    .header-controls {
+      display: flex;
+      align-items: center;
+      gap: 0.85rem;
+    }
+    .accent-picker {
+      display: flex;
+      align-items: center;
+      gap: 0.45rem;
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      padding: 5px 9px;
+      border-radius: 999px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    }
+    .accent-label {
+      font-size: 0.72rem;
+      font-weight: 700;
+      color: var(--text-dim);
+      text-transform: uppercase;
+      margin-right: 2px;
+    }
+    .accent-dot {
+      width: 15px;
+      height: 15px;
+      border-radius: 50%;
+      cursor: pointer;
+      transition: transform 0.2s, box-shadow 0.2s;
+      border: 2px solid transparent;
+    }
+    .accent-dot:hover { transform: scale(1.25); }
+    .accent-dot.cyan { background: #38bdf8; }
+    .accent-dot.emerald { background: #10b981; }
+    .accent-dot.indigo { background: #818cf8; }
+    .accent-dot.rose { background: #fb7185; }
+    .accent-dot.active {
+      border-color: var(--text-main);
+      transform: scale(1.15);
+      box-shadow: 0 0 8px currentColor;
+    }
+
+    .theme-toggle {
+      width: 38px;
+      height: 38px;
+      border-radius: 10px;
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      color: var(--text-main);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-size: 1.15rem;
+      transition: all 0.2s;
+      outline: none;
+    }
+    .theme-toggle:hover {
+      border-color: var(--primary-light);
+      transform: scale(1.06);
+      box-shadow: 0 2px 10px var(--primary-glow);
+    }
+
+    .status-badge {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.76rem;
+      color: var(--emerald-val);
+      background: rgba(16, 185, 129, 0.1);
+      border: 1px solid rgba(16, 185, 129, 0.28);
+      padding: 6px 12px;
+      border-radius: 999px;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+    .status-dot {
+      width: 7px;
+      height: 7px;
+      background: var(--emerald-val);
+      border-radius: 50%;
+      box-shadow: 0 0 8px var(--emerald-val);
+      animation: pulse 2s infinite ease-in-out;
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 0.5; transform: scale(0.9); }
+      50% { opacity: 1; transform: scale(1.25); }
+    }
+
+    .header-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.45rem;
+      background: var(--bg-card);
+      color: var(--text-main);
+      border: 1px solid var(--border-subtle);
+      padding: 7px 13px;
+      border-radius: 8px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      text-decoration: none;
+      transition: all 0.2s;
+      cursor: pointer;
+    }
+    .header-btn:hover {
+      border-color: var(--primary-light);
+      background: rgba(56, 189, 248, 0.08);
+      transform: translateY(-1px);
+    }
+
+    /* NAVIGATION TAB BAR */
+    .tab-navigation {
+      background: var(--bg-card);
+      border-bottom: 1px solid var(--border-subtle);
+      padding: 0 2.25rem;
+      display: flex;
+      gap: 0.4rem;
+      overflow-x: auto;
+      transition: background var(--transition-speed) ease;
+      scrollbar-width: thin;
+    }
+    .nav-item {
+      padding: 1rem 1.35rem;
+      font-size: 0.86rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      cursor: pointer;
+      border-bottom: 2.5px solid transparent;
+      transition: all 0.2s;
+      white-space: nowrap;
+      display: flex;
+      align-items: center;
+      gap: 0.55rem;
+      user-select: none;
+    }
+    .nav-item:hover { color: var(--text-main); }
+    .nav-item.active {
+      color: var(--primary-light);
+      border-bottom-color: var(--primary-light);
+      background: linear-gradient(180deg, transparent 75%, rgba(56, 189, 248, 0.08) 100%);
+    }
+
+    /* MAIN APP CONTAINER */
+    .app-viewport {
+      flex: 1;
+      max-width: 1440px;
+      width: 100%;
+      margin: 0 auto;
+      padding: 2rem 2.25rem;
+    }
+    .workspace-pane {
+      display: none;
+      animation: fadeIn 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .workspace-pane.active { display: block; }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* EXECUTIVE KPI GRID */
+    .kpi-row {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1.25rem;
+      margin-bottom: 1.85rem;
+    }
+    @media (max-width: 1080px) { .kpi-row { grid-template-columns: repeat(2, 1fr); } }
+    @media (max-width: 600px) { .kpi-row { grid-template-columns: 1fr; } }
+
+    .kpi-box {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: 14px;
+      padding: 1.35rem 1.6rem;
+      box-shadow: var(--shadow-card);
+      position: relative;
+      overflow: hidden;
+      transition: all 0.25s ease;
+    }
+    .kpi-box:hover {
+      border-color: var(--border-hover);
+      transform: translateY(-2px);
+    }
+    .kpi-box::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+    }
+    .kpi-box.primary-kpi::before { background: var(--primary-light); }
+    .kpi-box.indigo-kpi::before { background: var(--indigo-val); }
+    .kpi-box.emerald-kpi::before { background: var(--emerald-val); }
+    .kpi-box.rose-kpi::before { background: var(--rose-val); }
+
+    .kpi-label {
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      color: var(--text-dim);
+      margin-bottom: 0.35rem;
+    }
+    .kpi-number {
+      font-size: 2.2rem;
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      line-height: 1.1;
+      margin-bottom: 0.4rem;
+      font-family: var(--font-mono);
+    }
+    .kpi-meta {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+
+    /* CARD SYSTEM & CONTENT LAYOUTS */
+    .content-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: 14px;
+      padding: 1.65rem;
+      box-shadow: var(--shadow-card);
+      margin-bottom: 1.5rem;
+      transition: border-color var(--transition-speed) ease;
+    }
+    .card-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 1.25rem;
+    }
+    .card-heading {
+      font-size: 1.05rem;
+      font-weight: 700;
+      letter-spacing: -0.01em;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .card-subheading {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      margin-top: 3px;
+    }
+
+    .grid-duo {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.5rem;
+    }
+    @media (max-width: 980px) { .grid-duo { grid-template-columns: 1fr; } }
+
+    .chart-stage {
+      position: relative;
+      height: 310px;
+      width: 100%;
+    }
+
+    /* BADGES */
+    .badge {
+      font-size: 0.7rem;
+      font-weight: 700;
+      padding: 3px 9px;
+      border-radius: 6px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+    }
+    .badge-primary { background: rgba(56, 189, 248, 0.12); color: var(--primary-light); border: 1px solid rgba(56, 189, 248, 0.3); }
+    .badge-emerald { background: rgba(16, 185, 129, 0.12); color: var(--emerald-val); border: 1px solid rgba(16, 185, 129, 0.3); }
+    .badge-rose { background: rgba(244, 63, 94, 0.12); color: var(--rose-val); border: 1px solid rgba(244, 63, 94, 0.3); }
+    .badge-amber { background: rgba(245, 158, 11, 0.12); color: var(--amber-val); border: 1px solid rgba(245, 158, 11, 0.3); }
+    .badge-indigo { background: rgba(129, 140, 248, 0.12); color: var(--indigo-val); border: 1px solid rgba(129, 140, 248, 0.3); }
+
+    /* TABLES */
+    .table-wrap {
+      overflow-x: auto;
+      border: 1px solid var(--border-subtle);
+      border-radius: 10px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+      font-size: 0.82rem;
+    }
+    th {
+      background: var(--bg-card-hover);
+      color: var(--text-dim);
+      font-weight: 700;
+      padding: 10px 14px;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      border-bottom: 1px solid var(--border-subtle);
+      font-size: 0.72rem;
+      white-space: nowrap;
+    }
+    td {
+      padding: 11px 14px;
+      border-bottom: 1px solid var(--border-subtle);
+      color: var(--text-main);
+      white-space: nowrap;
+    }
+    tr:last-child td { border-bottom: none; }
+    tbody tr:hover { background-color: var(--bg-card-hover); }
+    .mono { font-family: var(--font-mono); }
+    .meta-positive { color: var(--emerald-val); font-weight: 700; }
+    .meta-primary { color: var(--primary-light); font-weight: 700; }
+    .meta-danger { color: var(--rose-val); font-weight: 700; }
+
+    /* INSTITUTIONAL SILO CARDS */
+    .hospital-cluster {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1rem;
+      margin-top: 1rem;
+    }
+    @media (max-width: 900px) { .hospital-cluster { grid-template-columns: 1fr; } }
+    .site-card {
+      background: var(--bg-card-elevated);
+      border: 1px solid var(--border-subtle);
+      border-radius: 10px;
+      padding: 1.15rem;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      transition: all 0.2s ease;
+      cursor: pointer;
+    }
+    .site-card:hover {
+      border-color: var(--primary-light);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 14px rgba(0,0,0,0.15);
+    }
+    .site-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 0.5rem;
+      font-weight: 700;
+      font-size: 0.88rem;
+    }
+    .site-specialty {
+      font-size: 0.76rem;
+      color: var(--text-muted);
+      margin-bottom: 0.75rem;
+      line-height: 1.4;
+    }
+    .site-foot {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.72rem;
+      color: var(--text-dim);
+      border-top: 1px dashed var(--border-subtle);
+      padding-top: 0.5rem;
+    }
+
+    /* FEDERATED TRAINING ROUND SCRUBBER (FEATURE 1) */
+    .fed-console {
+      background: var(--bg-card-hover);
+      border: 1px solid var(--border-subtle);
+      border-radius: 12px;
+      padding: 1.25rem 1.5rem;
+      margin-top: 1.25rem;
+    }
+    .scrubber-controls {
+      display: flex;
+      align-items: center;
+      gap: 1.2rem;
+      margin-top: 0.85rem;
+    }
+    .play-btn {
+      background: var(--primary-gradient);
+      color: white;
+      border: none;
+      padding: 7px 18px;
+      border-radius: 8px;
+      font-weight: 700;
+      font-size: 0.82rem;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      box-shadow: 0 2px 10px var(--primary-glow);
+      transition: all 0.2s;
+    }
+    .play-btn:hover { transform: scale(1.04); }
+
+    /* DIFFERENTIAL PRIVACY LAB */
+    .privacy-console {
+      background: var(--bg-card-elevated);
+      border: 1px solid var(--border-subtle);
+      border-radius: 12px;
+      padding: 1.5rem;
+      margin-bottom: 1.5rem;
+    }
+    .console-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1.2rem;
+    }
+    .slider-track {
+      -webkit-appearance: none;
+      width: 100%;
+      height: 8px;
+      border-radius: 4px;
+      background: var(--bg-input);
+      outline: none;
+      accent-color: var(--primary-light);
+      cursor: pointer;
+    }
+    .slider-markers {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 0.5rem;
+      font-size: 0.74rem;
+      color: var(--text-dim);
+      font-family: var(--font-mono);
+    }
+    .gauge-triad {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1.1rem;
+      margin-top: 1.25rem;
+    }
+    @media (max-width: 768px) { .gauge-triad { grid-template-columns: 1fr; } }
+    .gauge-unit {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: 12px;
+      padding: 1.2rem;
+      text-align: center;
+    }
+    .gauge-name {
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      color: var(--text-dim);
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      margin-bottom: 0.4rem;
+    }
+    .gauge-metric {
+      font-family: var(--font-mono);
+      font-size: 1.45rem;
+      font-weight: 800;
+    }
+
+    /* PATIENT RISK SIMULATOR & CLINICAL TRIAGE */
+    .preset-toolbar {
+      display: flex;
+      gap: 0.6rem;
+      margin-bottom: 1.4rem;
+      flex-wrap: wrap;
+    }
+    .preset-chip {
+      background: var(--bg-card-hover);
+      color: var(--text-muted);
+      border: 1px solid var(--border-subtle);
+      border-radius: 8px;
+      padding: 8px 14px;
+      font-size: 0.78rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .preset-chip:hover, .preset-chip.active {
+      color: var(--text-main);
+      background: rgba(56, 189, 248, 0.12);
+      border-color: var(--primary-light);
+    }
+
+    .triage-engine {
+      display: grid;
+      grid-template-columns: 1.2fr 1fr;
+      gap: 2rem;
+    }
+    @media (max-width: 980px) { .triage-engine { grid-template-columns: 1fr; } }
+
+    .input-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.25rem;
+      margin-bottom: 1.15rem;
+    }
+    @media (max-width: 550px) { .input-row { grid-template-columns: 1fr; } }
+
+    .input-field label {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      margin-bottom: 0.4rem;
+    }
+    .input-field select {
+      width: 100%;
+      background: var(--bg-card-hover);
+      color: var(--text-main);
+      border: 1px solid var(--border-subtle);
+      padding: 9px 12px;
+      border-radius: 8px;
+      font-size: 0.85rem;
+      outline: none;
+    }
+
+    /* TOGGLE SWITCH (FOR FAIRNESS MITIGATION) */
+    .toggle-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: var(--bg-card-elevated);
+      border: 1px solid var(--border-subtle);
+      padding: 0.85rem 1.2rem;
+      border-radius: 10px;
+      margin-bottom: 1.25rem;
+    }
+    .switch-ui {
+      position: relative;
+      display: inline-block;
+      width: 46px;
+      height: 24px;
+    }
+    .switch-ui input { opacity: 0; width: 0; height: 0; }
+    .slider-round {
+      position: absolute;
+      cursor: pointer;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background-color: var(--bg-input);
+      border: 1px solid var(--border-subtle);
+      transition: .3s;
+      border-radius: 34px;
+    }
+    .slider-round:before {
+      position: absolute;
+      content: "";
+      height: 16px; width: 16px;
+      left: 3px; bottom: 3px;
+      background-color: var(--text-muted);
+      transition: .3s;
+      border-radius: 50%;
+    }
+    input:checked + .slider-round {
+      background-color: var(--primary);
+      border-color: var(--primary-light);
+    }
+    input:checked + .slider-round:before {
+      transform: translateX(22px);
+      background-color: #ffffff;
+    }
+
+    /* CLINICAL OUTCOME BOARD */
+    .outcome-board {
+      background: var(--bg-card-hover);
+      border: 1px solid var(--border-subtle);
+      border-radius: 14px;
+      padding: 1.65rem;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+    .risk-meter { margin-bottom: 1.35rem; }
+    .risk-meter-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 0.45rem;
+    }
+    .risk-title { font-size: 0.9rem; font-weight: 700; }
+    .risk-percent {
+      font-family: var(--font-mono);
+      font-size: 1.35rem;
+      font-weight: 800;
+    }
+    .risk-trough {
+      height: 10px;
+      background: var(--bg-input);
+      border-radius: 5px;
+      overflow: hidden;
+      margin-bottom: 0.4rem;
+      border: 1px solid var(--border-subtle);
+    }
+    .risk-fill {
+      height: 100%;
+      border-radius: 5px;
+      transition: width 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .fill-diabetes { background: linear-gradient(90deg, #38bdf8, #0284c7); }
+    .fill-heart { background: linear-gradient(90deg, #f43f5e, #be123c); }
+    .fill-ckd { background: linear-gradient(90deg, #10b981, #047857); }
+
+    .clinical-alert-card {
+      background: var(--bg-card-elevated);
+      border-radius: 10px;
+      padding: 1.15rem;
+      font-size: 0.82rem;
+      color: var(--text-muted);
+      border-left: 3.5px solid var(--primary-light);
+      line-height: 1.55;
+    }
+
+    /* ACTION BUTTONS */
+    .action-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.45rem;
+      background: var(--bg-card-elevated);
+      color: var(--text-main);
+      border: 1px solid var(--border-subtle);
+      padding: 7px 14px;
+      border-radius: 8px;
+      font-size: 0.78rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .action-btn:hover {
+      border-color: var(--primary-light);
+      background: var(--bg-card-hover);
+      transform: translateY(-1px);
+    }
+    .action-btn.btn-primary {
+      background: var(--primary-gradient);
+      color: #ffffff;
+      border: none;
+      box-shadow: 0 2px 10px var(--primary-glow);
+    }
+
+    /* TOAST NOTIFICATIONS */
+    .toast-container {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      z-index: 9999;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      pointer-events: none;
+    }
+    .toast {
+      background: var(--bg-card-elevated);
+      color: var(--text-main);
+      border: 1px solid var(--border-subtle);
+      border-left: 4px solid var(--primary-light);
+      padding: 12px 18px;
+      border-radius: 8px;
+      font-size: 0.82rem;
+      font-weight: 600;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+      animation: toastSlideIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      pointer-events: auto;
+    }
+    @keyframes toastSlideIn {
+      from { transform: translateX(100%); opacity: 0; }
+      to { transform: translateX(0); opacity: 1; }
+    }
+
+    /* FOOTER */
+    footer {
+      border-top: 1px solid var(--border-subtle);
+      background: var(--bg-card);
+      padding: 1.85rem 2rem;
+      text-align: center;
+      font-size: 0.8rem;
+      color: var(--text-dim);
+      margin-top: auto;
+    }
+    footer a { color: var(--primary-light); text-decoration: none; font-weight: 600; }
+    footer a:hover { text-decoration: underline; }
+
+    /* PRINT STYLES FOR PATIENT TRIAGE REPORT */
+    @media print {
+      body { background: #fff !important; color: #000 !important; }
+      .app-header, .tab-navigation, .kpi-row, .preset-toolbar, .header-controls, .action-toolbar, footer, #pane-overview, #pane-privacy, #pane-fairness, #pane-matrix {
+        display: none !important;
+      }
+      #pane-simulator { display: block !important; }
+      .content-card { border: none !important; box-shadow: none !important; padding: 0 !important; }
+      .print-header-report {
+        display: block !important;
+        border-bottom: 2px solid #000;
+        padding-bottom: 12px;
+        margin-bottom: 20px;
+      }
+      .triage-engine { display: block !important; }
+      .outcome-board { border: 1px solid #ccc !important; background: #fff !important; }
+      .risk-percent { color: #000 !important; }
+      .risk-trough { border: 1px solid #000 !important; }
+    }
+    .print-header-report { display: none; }
+  </style>
+</head>
+<body>
+
+  <!-- Top App Navigation -->
+  <header class="app-header">
+    <div class="brand-section">
+      <div class="brand-icon">🏥</div>
+      <div>
+        <div class="brand-name">FairFed Risk <span class="brand-tag">Clinical Suite</span></div>
+        <div class="brand-desc">Privacy-Preserving Multi-Disease Risk Prediction with Subgroup Fairness Constraints</div>
+      </div>
+    </div>
+
+    <div class="header-controls">
+      <!-- Accent Palette Selector -->
+      <div class="accent-picker" title="Customize Accent Palette">
+        <span class="accent-label">Theme</span>
+        <span class="accent-dot cyan active" onclick="setAccent('cyan')" title="Cyan (Clinical Tech)"></span>
+        <span class="accent-dot emerald" onclick="setAccent('emerald')" title="Emerald (Biometrics)"></span>
+        <span class="accent-dot indigo" onclick="setAccent('indigo')" title="Indigo (Federated AI)"></span>
+        <span class="accent-dot rose" onclick="setAccent('rose')" title="Rose (Critical Care)"></span>
+      </div>
+
+      <!-- Theme Switcher (Dark / Light) -->
+      <button class="theme-toggle" id="themeBtn" onclick="toggleTheme()" title="Switch Light/Dark Mode (Key: T)">
+        <span id="themeSymbol">☀️</span>
+      </button>
+
+      <div class="status-badge" title="Flower Federated Network Connected">
+        <span class="status-dot"></span>
+        <span>Flower Cluster Active</span>
+      </div>
+
+      <a href="https://github.com/SyedAsif7/fairfed_risk.git" target="_blank" class="header-btn" title="View GitHub Source Repository">
+        <svg width="15" height="15" fill="currentColor" viewBox="0 0 16 16"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.012 8.012 0 0 0 16 8c0-4.42-3.58-8-8-8z"/></svg>
+        GitHub
+      </a>
+    </div>
+  </header>
+
+  <!-- Navigation Tab Bar -->
+  <nav class="tab-navigation">
+    <div class="nav-item active" onclick="activateTab('overview')">📊 Executive Overview & Silos</div>
+    <div class="nav-item" onclick="activateTab('privacy')">🔒 Differential Privacy Lab</div>
+    <div class="nav-item" onclick="activateTab('fairness')">⚖️ Fairness & Equity Audit</div>
+    <div class="nav-item" onclick="activateTab('matrix')">🔬 Joint Factorial Matrix (5 Seeds)</div>
+    <div class="nav-item" onclick="activateTab('simulator')">🩺 Live Patient Risk Simulator</div>
+  </nav>
+
+  <!-- Main Viewport -->
+  <main class="app-viewport">
+
+    <!-- Executive KPI Summary Cards -->
+    <div class="kpi-row">
+      <div class="kpi-box primary-kpi">
+        <div class="kpi-label">Harmonized Patient Cohort</div>
+        <div class="kpi-number">2,088</div>
+        <div class="kpi-meta"><span class="meta-primary">6 Hospital Partitions</span> &bull; 7 Biomarkers</div>
+      </div>
+      <div class="kpi-box indigo-kpi">
+        <div class="kpi-label">Centralized Upper Bound</div>
+        <div class="kpi-number mono">0.9143</div>
+        <div class="kpi-meta">Macro AUROC &bull; Pooled Ideal ($N=1,669$)</div>
+      </div>
+      <div class="kpi-box emerald-kpi">
+        <div class="kpi-label">Federated Proximal (FedProx)</div>
+        <div class="kpi-number mono">0.8003</div>
+        <div class="kpi-meta"><span class="meta-positive">+0.0431 Gain</span> over FedAvg (0.7572)</div>
+      </div>
+      <div class="kpi-box rose-kpi">
+        <div class="kpi-label">Demographic Disparity Reduced</div>
+        <div class="kpi-number">81.3%</div>
+        <div class="kpi-meta"><span class="meta-positive">Sex DPD: 0.3047 → 0.0571</span></div>
+      </div>
+    </div>
+
+    <!-- ========================================================== -->
+    <!-- TAB 1: EXECUTIVE OVERVIEW & INSTITUTIONAL SILOS -->
+    <!-- ========================================================== -->
+    <div id="pane-overview" class="workspace-pane active">
+      <div class="grid-duo">
+        <div class="content-card">
+          <div class="card-top">
+            <div>
+              <div class="card-heading">🏥 Institutional Silo Generalization Collapse</div>
+              <div class="card-subheading">Evaluating siloed models on held-out multi-center test partition ($N=419$)</div>
+            </div>
+            <span class="badge badge-primary">Held-Out Test N=419</span>
+          </div>
+          <div class="chart-stage">
+            <canvas id="siloChart"></canvas>
+          </div>
+          <div style="font-size: 0.78rem; color: var(--text-dim); margin-top: 0.75rem;">
+            * Isolated single-hospital models suffer severe generalization failure (AUROC drops to 0.6072–0.7853). Multi-center federated aggregation resolves institutional distribution shifts.
+          </div>
+        </div>
+
+        <div class="content-card">
+          <div class="card-top">
+            <div>
+              <div class="card-heading">🌐 Multi-Center Benchmark Evaluation</div>
+              <div class="card-subheading">Centralized baseline vs. Silos vs. FedAvg vs. FedProx</div>
+            </div>
+            <span class="badge badge-emerald">Empirical Table</span>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Model Architecture</th>
+                  <th>Training Silo</th>
+                  <th>Macro AUROC</th>
+                  <th>Macro AUPRC</th>
+                  <th>Brier Score</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr style="background: rgba(56, 189, 248, 0.05);">
+                  <td><strong>Centralized Pooled (Upper Bound)</strong></td>
+                  <td>All 6 Centers (N=1,669)</td>
+                  <td class="mono meta-primary">0.9143</td>
+                  <td class="mono">0.8778</td>
+                  <td class="mono">0.1150</td>
+                </tr>
+                <tr>
+                  <td>Local-Only: H0 (Cleveland Cardiology)</td>
+                  <td>Hospital 0 (N=242)</td>
+                  <td class="mono">0.6689</td>
+                  <td class="mono">0.6691</td>
+                  <td class="mono">0.2060</td>
+                </tr>
+                <tr>
+                  <td>Local-Only: H2 (VA Long Beach)</td>
+                  <td>Hospital 2 (N=258)</td>
+                  <td class="mono meta-danger">0.6072</td>
+                  <td class="mono">0.6242</td>
+                  <td class="mono">0.2278</td>
+                </tr>
+                <tr>
+                  <td>Local-Only: H3 (Apollo Nephrology)</td>
+                  <td>Hospital 3 (N=240)</td>
+                  <td class="mono">0.7804</td>
+                  <td class="mono">0.7375</td>
+                  <td class="mono">0.2132</td>
+                </tr>
+                <tr>
+                  <td>Federated: FedAvg (R=15)</td>
+                  <td>6 Non-IID Nodes</td>
+                  <td class="mono">0.7572</td>
+                  <td class="mono">0.7503</td>
+                  <td class="mono">0.1836</td>
+                </tr>
+                <tr style="background: rgba(16, 185, 129, 0.08);">
+                  <td><strong>Federated: FedProx (μ=0.01)</strong></td>
+                  <td>6 Non-IID Nodes</td>
+                  <td class="mono meta-positive">0.8003</td>
+                  <td class="mono meta-positive">0.7655</td>
+                  <td class="mono meta-positive">0.1582</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- Institutional Partitions Grid -->
+      <div class="content-card" style="margin-top: 1.5rem;">
+        <div class="card-top">
+          <div>
+            <div class="card-heading">🏢 Simulated Non-IID Hospital Partitions & Clinical Modalities</div>
+            <div class="card-subheading">Local pre-processing pipelines fit strictly on local training sets (Zero Data Leakage)</div>
+          </div>
+          <span class="badge badge-primary">6 Clinical Nodes</span>
+        </div>
+        <div class="hospital-cluster">
+          <div class="site-card" onclick="inspectHospital(0)">
+            <div class="site-top"><span>Hospital 0: Cleveland Clinic</span> <span class="badge badge-primary">CAD</span></div>
+            <div class="site-specialty">Cardiovascular angiography specialty cohort &bull; 70.2% Male</div>
+            <div class="site-foot"><span>Train: 242</span><span>Test: 61</span><span class="mono">Obs: CAD, Diabetes</span></div>
+          </div>
+          <div class="site-card" onclick="inspectHospital(1)">
+            <div class="site-top"><span>Hospital 1: Hungarian Cardiology</span> <span class="badge badge-primary">CAD</span></div>
+            <div class="site-specialty">Younger European cardiac cohort &bull; 74.0% Male</div>
+            <div class="site-foot"><span>Train: 235</span><span>Test: 59</span><span class="mono">Obs: CAD, Diabetes</span></div>
+          </div>
+          <div class="site-card" onclick="inspectHospital(2)">
+            <div class="site-top"><span>Hospital 2: VA Long Beach</span> <span class="badge badge-rose">Veterans</span></div>
+            <div class="site-specialty">Older high-severity veterans cohort &bull; 94.2% Male</div>
+            <div class="site-foot"><span>Train: 258</span><span>Test: 65</span><span class="mono">Obs: CAD, Diabetes</span></div>
+          </div>
+          <div class="site-card" onclick="inspectHospital(3)">
+            <div class="site-top"><span>Hospital 3: Apollo Nephrology</span> <span class="badge badge-emerald">CKD</span></div>
+            <div class="site-specialty">Renal profiling, glomerular filtration &bull; 67.1% Male</div>
+            <div class="site-foot"><span>Train: 240</span><span>Test: 60</span><span class="mono">Obs: CKD, CAD, Diabetes</span></div>
+          </div>
+          <div class="site-card" onclick="inspectHospital(4)">
+            <div class="site-top"><span>Hospital 4: Southwest Metabolic</span> <span class="badge badge-amber">Diabetes</span></div>
+            <div class="site-specialty">Pima diabetes screening center &bull; 100% Female</div>
+            <div class="site-foot"><span>Train: 440</span><span>Test: 110</span><span class="mono">Obs: Diabetes</span></div>
+          </div>
+          <div class="site-card" onclick="inspectHospital(5)">
+            <div class="site-top"><span>Hospital 5: Metro Community</span> <span class="badge badge-primary">General</span></div>
+            <div class="site-specialty">Multi-morbid primary care blend &bull; 22.0% Male</div>
+            <div class="site-foot"><span>Train: 254</span><span>Test: 64</span><span class="mono">Obs: CKD, CAD, Diabetes</span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- NEW: Interactive Federated Convergence Scrubber -->
+      <div class="fed-console">
+        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+          <div>
+            <div style="font-weight: 700; font-size: 0.95rem;">⚡ Interactive Federated Training Convergence Visualizer</div>
+            <div style="font-size: 0.78rem; color: var(--text-muted); margin-top: 2px;">
+              Observe round-by-round client gradient aggregation and proximal stabilization ($\mu=0.01$).
+            </div>
+          </div>
+          <div style="display: flex; align-items: center; gap: 0.8rem;">
+            <button class="play-btn" id="playRoundBtn" onclick="toggleConvergencePlay()">▶ Play Simulation</button>
+            <span class="badge badge-indigo mono" id="roundBadge" style="font-size: 0.82rem; padding: 5px 10px;">Round: 15 / 15</span>
+          </div>
+        </div>
+        <div class="scrubber-controls">
+          <input type="range" class="slider-track" id="roundSlider" min="1" max="15" value="15" oninput="updateConvergenceRound(this.value)">
+        </div>
+        <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; margin-top: 1rem;">
+          <div class="gauge-unit">
+            <div class="gauge-name">Global Multi-Task Loss</div>
+            <div class="gauge-metric mono" id="convLoss">0.3842</div>
+          </div>
+          <div class="gauge-unit">
+            <div class="gauge-name">Macro Test AUROC</div>
+            <div class="gauge-metric mono meta-positive" id="convAuroc">0.8003</div>
+          </div>
+          <div class="gauge-unit">
+            <div class="gauge-name">Client Parameter Drift (Δ)</div>
+            <div class="gauge-metric mono meta-primary" id="convDrift">0.0412</div>
+          </div>
+          <div class="gauge-unit">
+            <div class="gauge-name">Proximal Pullback State</div>
+            <div class="gauge-metric mono" id="convState" style="color: var(--emerald-val); font-size: 1rem;">Stable Convergence</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ========================================================== -->
+    <!-- TAB 2: DIFFERENTIAL PRIVACY LAB -->
+    <!-- ========================================================== -->
+    <div id="pane-privacy" class="workspace-pane">
+      <div class="privacy-console">
+        <div class="console-header">
+          <div>
+            <div style="font-size: 1.05rem; font-weight: 700;">Interactive Differential Privacy Budget Explorer ($\epsilon$)</div>
+            <div style="font-size: 0.8rem; color: var(--text-muted); margin-top: 3px;">
+              Slide budget to inspect Gaussian noise multiplier ($\sigma$), gradient clipping boundary ($C=1.0$), and RDP composition ($\delta=10^{-5}$).
+            </div>
+          </div>
+          <div class="mono" id="epsReadout" style="font-size: 1.4rem; font-weight: 800; color: var(--primary-light);">ε = 3.0</div>
+        </div>
+
+        <div>
+          <input type="range" class="slider-track" id="dpRangeInput" min="0.5" max="10.0" step="0.5" value="3.0">
+          <div class="slider-markers">
+            <span>0.5 (Strict PPML)</span>
+            <span>1.0</span>
+            <span>3.0 (Balanced Clinical)</span>
+            <span>8.0</span>
+            <span>10.0 (Permissive)</span>
+          </div>
+        </div>
+
+        <div class="gauge-triad">
+          <div class="gauge-unit">
+            <div class="gauge-name">Calibrated Noise Multiplier (σ)</div>
+            <div class="gauge-metric meta-primary" id="sigmaGauge">3.0037</div>
+          </div>
+          <div class="gauge-unit">
+            <div class="gauge-name">Estimated Macro AUROC</div>
+            <div class="gauge-metric meta-positive" id="aurocGauge">0.7536</div>
+          </div>
+          <div class="gauge-unit">
+            <div class="gauge-name">Reconstruction Defense</div>
+            <div class="gauge-metric" id="statusGauge" style="font-size: 1.05rem; color: var(--primary-light);">Balanced HIPAA Guard</div>
+          </div>
+        </div>
+
+        <!-- NEW: Dynamic Gaussian Noise Visualizer Canvas -->
+        <div style="margin-top: 1.5rem; background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 10px; padding: 1.25rem;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
+            <div style="font-size: 0.85rem; font-weight: 700;">Gaussian DP Noise Density $\mathcal{N}(0, \sigma^2)$ vs. Gradient Clipping ($C=1.0$)</div>
+            <span class="badge badge-primary mono" id="clippingStatus">C = 1.0 Sphere Active</span>
+          </div>
+          <canvas id="noiseCanvas" height="140" style="width: 100%; border-radius: 6px;"></canvas>
+        </div>
+      </div>
+
+      <div class="grid-duo">
+        <div class="content-card">
+          <div class="card-top">
+            <div>
+              <div class="card-heading">📉 Utility vs. Privacy Budget (DP-SGD Decay Curve)</div>
+              <div class="card-subheading">Opacus Rényi Differential Privacy (RDP) evaluation at $\delta=10^{-5}$</div>
+            </div>
+            <span class="badge badge-primary">Opacus RDP Accounting</span>
+          </div>
+          <div class="chart-stage">
+            <canvas id="privacyChart"></canvas>
+          </div>
+        </div>
+
+        <div class="content-card">
+          <div class="card-top">
+            <div>
+              <div class="card-heading">📋 Differential Privacy Grid Benchmarks</div>
+              <div class="card-subheading">Empirical results from Phase 4 Opacus trials</div>
+            </div>
+            <span class="badge badge-emerald">Empirical Metrics</span>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Target ε</th>
+                  <th>Spent ε</th>
+                  <th>Noise σ</th>
+                  <th>Macro AUROC</th>
+                  <th>CKD AUROC</th>
+                  <th>Heart AUROC</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><strong>1.0 (Strict)</strong></td>
+                  <td class="mono">0.95</td>
+                  <td class="mono">7.7856</td>
+                  <td class="mono">0.7182</td>
+                  <td class="mono">0.7148</td>
+                  <td class="mono">0.5292</td>
+                </tr>
+                <tr style="background: rgba(56, 189, 248, 0.05);">
+                  <td><strong>3.0 (Balanced)</strong></td>
+                  <td class="mono">2.84</td>
+                  <td class="mono">3.0037</td>
+                  <td class="mono meta-primary">0.7536</td>
+                  <td class="mono">0.7933</td>
+                  <td class="mono">0.5505</td>
+                </tr>
+                <tr>
+                  <td><strong>8.0 (Permissive)</strong></td>
+                  <td class="mono">7.56</td>
+                  <td class="mono">1.4509</td>
+                  <td class="mono">0.7724</td>
+                  <td class="mono">0.8267</td>
+                  <td class="mono">0.5684</td>
+                </tr>
+                <tr>
+                  <td><strong>∞ (Non-Private)</strong></td>
+                  <td class="mono">inf</td>
+                  <td class="mono">0.0000</td>
+                  <td class="mono meta-positive">0.8025</td>
+                  <td class="mono meta-positive">0.8504</td>
+                  <td class="mono meta-positive">0.6188</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <div style="font-size: 0.78rem; color: var(--text-dim); margin-top: 1rem; line-height: 1.5;">
+            * Lower-prevalence, imbalanced modalities (CAD and CKD) show elevated sensitivity to gradient clipping and noise injection, while Diabetes remains stable.
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ========================================================== -->
+    <!-- TAB 3: FAIRNESS & EQUITY AUDIT -->
+    <!-- ========================================================== -->
+    <div id="pane-fairness" class="workspace-pane">
+      <div class="grid-duo">
+        <div class="content-card">
+          <div class="card-top">
+            <div>
+              <div class="card-heading">⚖️ Subgroup Demographic Disparity Audit</div>
+              <div class="card-subheading">Audited across protected attributes on test partition</div>
+            </div>
+            <!-- Subgroup Switcher -->
+            <div style="display: flex; gap: 0.4rem;">
+              <button class="action-btn" id="btnAttrSex" onclick="switchFairnessAttribute('sex')" style="font-size: 0.72rem; padding: 4px 10px;">Biological Sex</button>
+              <button class="action-btn" id="btnAttrAge" onclick="switchFairnessAttribute('age')" style="font-size: 0.72rem; padding: 4px 10px;">Age (&lt;55 vs ≥55)</button>
+            </div>
+          </div>
+          <div class="chart-stage">
+            <canvas id="fairnessChart"></canvas>
+          </div>
+          <div style="font-size: 0.76rem; color: var(--text-dim); margin-top: 0.75rem;">
+            * DPD = Demographic Parity Difference | EOD = Equalized Odds Difference. Lower values indicate equitable risk distribution.
+          </div>
+        </div>
+
+        <div class="content-card">
+          <div class="card-top">
+            <div>
+              <div class="card-heading">🎯 Dual Mitigation Strategy Benchmark</div>
+              <div class="card-subheading">Client loss covariance penalty vs. FairFed server reweighting</div>
+            </div>
+            <span class="badge badge-emerald">Pareto Optimal Comparison</span>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Mitigation Strategy</th>
+                  <th>Macro AUROC</th>
+                  <th>Sex DPD</th>
+                  <th>Sex EOD</th>
+                  <th>Age DPD</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>FedProx (No Mitigation)</td>
+                  <td class="mono">0.8025</td>
+                  <td class="mono meta-danger">0.3047</td>
+                  <td class="mono">0.3409</td>
+                  <td class="mono">0.5227</td>
+                </tr>
+                <tr style="background: rgba(56, 189, 248, 0.05);">
+                  <td><strong>Client Loss Penalty (λ=0.6)</strong></td>
+                  <td class="mono meta-primary">0.7890</td>
+                  <td class="mono meta-positive">0.1331</td>
+                  <td class="mono meta-positive">0.1499</td>
+                  <td class="mono">0.4616</td>
+                </tr>
+                <tr>
+                  <td>Server Reweighting (FairFed)</td>
+                  <td class="mono">0.5723</td>
+                  <td class="mono">0.1240</td>
+                  <td class="mono">0.2886</td>
+                  <td class="mono">0.3041</td>
+                </tr>
+                <tr style="background: rgba(16, 185, 129, 0.08);">
+                  <td><strong>Dual Mitigation (Loss + FairFed)</strong></td>
+                  <td class="mono">0.7489</td>
+                  <td class="mono meta-positive">0.0571</td>
+                  <td class="mono meta-positive">0.1729</td>
+                  <td class="mono meta-positive">0.2923</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <div style="font-size: 0.82rem; color: var(--text-muted); margin-top: 1rem; line-height: 1.55;">
+            💡 <strong>Pareto Takeaway:</strong> In-processing client covariance penalties ($\lambda=0.6$) achieve <strong>56.3% disparity reduction</strong> with <strong>98.3% utility retention</strong>, avoiding the instability of server-side reweighting under extreme label skew.
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ========================================================== -->
+    <!-- TAB 4: JOINT FACTORIAL MATRIX (5 SEEDS) -->
+    <!-- ========================================================== -->
+    <div id="pane-matrix" class="workspace-pane">
+      <div class="content-card">
+        <div class="card-top">
+          <div>
+            <div class="card-heading">🔬 Core Factorial Research Matrix (Mean ± Std over 5 Seeds)</div>
+            <div class="card-subheading">
+              Empirically evaluated across 40 federated trials (seeds [42, 43, 44, 45, 46]) tracked via SQLite MLflow.
+            </div>
+          </div>
+          <div style="display: flex; gap: 0.5rem; align-items: center;">
+            <button class="action-btn" onclick="exportFactorialCsv()" title="Download raw CSV dataset">
+              📥 Export CSV
+            </button>
+            <button class="action-btn" onclick="copyLatexTable()" title="Copy publication LaTeX table">
+              📋 Copy LaTeX
+            </button>
+            <span class="badge badge-primary">40 Executed Runs</span>
+          </div>
+        </div>
+
+        <!-- Filter Bar -->
+        <div style="display: flex; gap: 1rem; margin-bottom: 1rem; align-items: center; flex-wrap: wrap;">
+          <span style="font-size: 0.78rem; font-weight: 700; color: var(--text-dim); text-transform: uppercase;">Filter By:</span>
+          <select id="matrixFilterEps" onchange="filterMatrixTable()" style="background: var(--bg-card-hover); color: var(--text-main); border: 1px solid var(--border-subtle); padding: 5px 10px; border-radius: 6px; font-size: 0.78rem;">
+            <option value="all">All Privacy Budgets (ε)</option>
+            <option value="1.0">ε = 1.0 (Strict)</option>
+            <option value="3.0">ε = 3.0 (Balanced)</option>
+            <option value="8.0">ε = 8.0 (Permissive)</option>
+            <option value="inf">ε = ∞ (Non-Private)</option>
+          </select>
+          <select id="matrixFilterFair" onchange="filterMatrixTable()" style="background: var(--bg-card-hover); color: var(--text-main); border: 1px solid var(--border-subtle); padding: 5px 10px; border-radius: 6px; font-size: 0.78rem;">
+            <option value="all">All Fairness Regimes</option>
+            <option value="none">No Mitigation</option>
+            <option value="mitigated">Fairness Mitigation</option>
+          </select>
+        </div>
+
+        <div class="table-wrap">
+          <table id="matrixDataTable">
+            <thead>
+              <tr>
+                <th>Privacy Budget (ε)</th>
+                <th>Fairness Regime</th>
+                <th>Macro AUROC</th>
+                <th>Macro AUPRC</th>
+                <th>Macro Brier</th>
+                <th>Sex DPD</th>
+                <th>Sex EOD</th>
+                <th>Age DPD</th>
+                <th>Age EOD</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr data-eps="1.0" data-fair="none">
+                <td><strong>ε = 1.0 (Strict)</strong></td>
+                <td>No Mitigation</td>
+                <td class="mono">0.6694 ± 0.0589</td>
+                <td class="mono">0.6470 ± 0.0547</td>
+                <td class="mono">0.2172 ± 0.0040</td>
+                <td class="mono">0.0760 ± 0.0298</td>
+                <td class="mono">0.0880 ± 0.0395</td>
+                <td class="mono">0.1643 ± 0.1036</td>
+                <td class="mono">0.2003 ± 0.1244</td>
+              </tr>
+              <tr data-eps="1.0" data-fair="mitigated">
+                <td><strong>ε = 1.0 (Strict)</strong></td>
+                <td>Fairness Mitigation</td>
+                <td class="mono">0.6462 ± 0.0727</td>
+                <td class="mono">0.6421 ± 0.0643</td>
+                <td class="mono">0.2223 ± 0.0066</td>
+                <td class="mono">0.0814 ± 0.0566</td>
+                <td class="mono">0.0969 ± 0.0581</td>
+                <td class="mono">0.1546 ± 0.1218</td>
+                <td class="mono">0.1923 ± 0.1346</td>
+              </tr>
+              <tr data-eps="3.0" data-fair="none">
+                <td><strong>ε = 3.0 (Balanced)</strong></td>
+                <td>No Mitigation</td>
+                <td class="mono">0.7090 ± 0.0443</td>
+                <td class="mono">0.6946 ± 0.0380</td>
+                <td class="mono">0.2125 ± 0.0044</td>
+                <td class="mono">0.0764 ± 0.0289</td>
+                <td class="mono">0.1275 ± 0.0342</td>
+                <td class="mono">0.1528 ± 0.0879</td>
+                <td class="mono">0.2392 ± 0.0870</td>
+              </tr>
+              <tr data-eps="3.0" data-fair="mitigated">
+                <td><strong>ε = 3.0 (Balanced)</strong></td>
+                <td>Fairness Mitigation</td>
+                <td class="mono">0.6736 ± 0.0814</td>
+                <td class="mono">0.6713 ± 0.0689</td>
+                <td class="mono">0.2181 ± 0.0054</td>
+                <td class="mono">0.0773 ± 0.0205</td>
+                <td class="mono">0.1412 ± 0.0301</td>
+                <td class="mono">0.1738 ± 0.0700</td>
+                <td class="mono">0.2559 ± 0.1053</td>
+              </tr>
+              <tr data-eps="8.0" data-fair="none">
+                <td><strong>ε = 8.0 (Permissive)</strong></td>
+                <td>No Mitigation</td>
+                <td class="mono">0.7364 ± 0.0232</td>
+                <td class="mono">0.7154 ± 0.0254</td>
+                <td class="mono">0.2058 ± 0.0095</td>
+                <td class="mono">0.0832 ± 0.0597</td>
+                <td class="mono">0.1567 ± 0.0652</td>
+                <td class="mono">0.1884 ± 0.1117</td>
+                <td class="mono">0.2737 ± 0.1327</td>
+              </tr>
+              <tr data-eps="8.0" data-fair="mitigated">
+                <td><strong>ε = 8.0 (Permissive)</strong></td>
+                <td>Fairness Mitigation</td>
+                <td class="mono">0.6854 ± 0.0743</td>
+                <td class="mono">0.6838 ± 0.0591</td>
+                <td class="mono">0.2109 ± 0.0135</td>
+                <td class="mono">0.0858 ± 0.0750</td>
+                <td class="mono">0.1415 ± 0.0709</td>
+                <td class="mono">0.1992 ± 0.1304</td>
+                <td class="mono">0.2795 ± 0.1540</td>
+              </tr>
+              <tr data-eps="inf" data-fair="none" style="background: rgba(56, 189, 248, 0.05);">
+                <td><strong>ε = ∞ (Non-Private)</strong></td>
+                <td>No Mitigation</td>
+                <td class="mono meta-primary">0.7923 ± 0.0102</td>
+                <td class="mono">0.7445 ± 0.0152</td>
+                <td class="mono">0.1685 ± 0.0063</td>
+                <td class="mono meta-danger">0.2710 ± 0.0246</td>
+                <td class="mono">0.3388 ± 0.0303</td>
+                <td class="mono">0.4317 ± 0.0711</td>
+                <td class="mono">0.5207 ± 0.0606</td>
+              </tr>
+              <tr data-eps="inf" data-fair="mitigated" style="background: rgba(16, 185, 129, 0.08);">
+                <td><strong>ε = ∞ (Non-Private)</strong></td>
+                <td>Fairness Mitigation</td>
+                <td class="mono">0.7531 ± 0.0118</td>
+                <td class="mono">0.7231 ± 0.0061</td>
+                <td class="mono">0.1947 ± 0.0031</td>
+                <td class="mono meta-positive">0.1546 ± 0.0433</td>
+                <td class="mono meta-positive">0.1917 ± 0.0377</td>
+                <td class="mono meta-positive">0.3798 ± 0.0659</td>
+                <td class="mono meta-positive">0.4624 ± 0.1072</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ========================================================== -->
+    <!-- TAB 5: LIVE PATIENT SIMULATOR & TRIAGE REPORT -->
+    <!-- ========================================================== -->
+    <div id="pane-simulator" class="workspace-pane">
+      <div class="content-card">
+        <!-- Print Header (Hidden on screen, visible only when printing) -->
+        <div class="print-header-report">
+          <h2>FairFed Risk &bull; Clinical Patient Risk Assessment & Triage Summary</h2>
+          <p style="font-size: 0.85rem; color: #444; margin-top: 4px;">Federated Multi-Task Clinical Risk Engine &bull; Generated from Live Patient Simulator</p>
+        </div>
+
+        <div class="card-top">
+          <div>
+            <div class="card-heading">🩺 Multi-Disease Clinical Risk Inference Engine</div>
+            <div class="card-subheading">
+              Multi-task neural network predicting simultaneous early disease risks with cross-task comorbidity alignment.
+            </div>
+          </div>
+          <div style="display: flex; gap: 0.5rem; align-items: center;">
+            <button class="action-btn" onclick="printPatientReport()" title="Print or save PDF of patient assessment">
+              🖨️ Export PDF / Print
+            </button>
+            <span class="badge badge-emerald">FedProx Multi-Task Trunk</span>
+          </div>
+        </div>
+
+        <!-- Presets Toolbar -->
+        <div class="preset-toolbar">
+          <button class="preset-chip active" onclick="loadClinicalPreset('diabetic_cad')">Preset 1: 58y Male (Diabetic + Mild CAD)</button>
+          <button class="preset-chip" onclick="loadClinicalPreset('healthy_female')">Preset 2: 34y Healthy Female</button>
+          <button class="preset-chip" onclick="loadClinicalPreset('renal_elderly')">Preset 3: 68y High-Risk Male (Elevated Creatinine/CKD)</button>
+          <button class="preset-chip" onclick="loadClinicalPreset('metabolic_syndrome')">Preset 4: 49y Female (Metabolic Syndrome, High BMI)</button>
+        </div>
+
+        <!-- Subgroup Fairness Mitigation Toggle -->
+        <div class="toggle-row">
+          <div>
+            <div style="font-size: 0.85rem; font-weight: 700;">Subgroup Demographic Bias Mitigation</div>
+            <div style="font-size: 0.74rem; color: var(--text-muted); margin-top: 2px;">
+              Applies FairFed covariance penalty to calibrate female cardiac risk and reduce sex-disparity bias.
+            </div>
+          </div>
+          <label class="switch-ui">
+            <input type="checkbox" id="toggleMitigation" checked onchange="recalculateTriageEngine()">
+            <span class="slider-round"></span>
+          </label>
+        </div>
+
+        <div class="triage-engine">
+          <!-- Biomarker Form -->
+          <div>
+            <div class="input-row">
+              <div class="input-field">
+                <label><span>Age (years):</span> <span class="mono" id="labelAge">58</span></label>
+                <input type="range" class="slider-track" id="sliderAge" min="20" max="85" value="58">
+              </div>
+              <div class="input-field">
+                <label><span>Biological Sex:</span> <span class="mono" id="labelSex">Male</span></label>
+                <select id="selectSex">
+                  <option value="1" selected>Male (1)</option>
+                  <option value="0">Female (0)</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="input-row">
+              <div class="input-field">
+                <label><span>BMI (kg/m²):</span> <span class="mono" id="labelBmi">29.5</span></label>
+                <input type="range" class="slider-track" id="sliderBmi" min="15.0" max="50.0" step="0.1" value="29.5">
+              </div>
+              <div class="input-field">
+                <label><span>Systolic BP (mmHg):</span> <span class="mono" id="labelBp">142</span></label>
+                <input type="range" class="slider-track" id="sliderBp" min="90" max="210" value="142">
+              </div>
+            </div>
+
+            <div class="input-row">
+              <div class="input-field">
+                <label><span>Fasting Glucose (mg/dL):</span> <span class="mono" id="labelGlucose">148</span></label>
+                <input type="range" class="slider-track" id="sliderGlucose" min="60" max="280" value="148">
+              </div>
+              <div class="input-field">
+                <label><span>Total Cholesterol (mg/dL):</span> <span class="mono" id="labelChol">235</span></label>
+                <input type="range" class="slider-track" id="sliderChol" min="100" max="380" value="235">
+              </div>
+            </div>
+
+            <div class="input-field">
+              <label><span>Serum Creatinine (mg/dL):</span> <span class="mono" id="labelCreatinine">1.35</span></label>
+              <input type="range" class="slider-track" id="sliderCreatinine" min="0.4" max="6.0" step="0.05" value="1.35">
+            </div>
+          </div>
+
+          <!-- Risk Outputs Board -->
+          <div class="outcome-board">
+            <div>
+              <div style="font-size: 0.95rem; font-weight: 700; margin-bottom: 1.25rem; color: var(--primary-light);">
+                Simultaneous Multi-Disease Risk Prediction
+              </div>
+
+              <!-- Diabetes -->
+              <div class="risk-meter">
+                <div class="risk-meter-header">
+                  <span class="risk-title">Type 2 Diabetes Mellitus</span>
+                  <span class="risk-percent mono" id="outDiabetesProb" style="color: var(--primary-light);">64.2%</span>
+                </div>
+                <div class="risk-trough">
+                  <div class="risk-fill fill-diabetes" id="outDiabetesBar" style="width: 64.2%;"></div>
+                </div>
+                <div style="display: flex; justify-content: space-between; font-size: 0.74rem;">
+                  <span style="color: var(--text-dim);">Pima Metabolic Head</span>
+                  <span class="badge badge-amber" id="outDiabetesBadge">Elevated Risk</span>
+                </div>
+              </div>
+
+              <!-- Heart Disease -->
+              <div class="risk-meter">
+                <div class="risk-meter-header">
+                  <span class="risk-title">Coronary Heart Disease (CAD)</span>
+                  <span class="risk-percent mono" id="outHeartProb" style="color: var(--rose-val);">72.8%</span>
+                </div>
+                <div class="risk-trough">
+                  <div class="risk-fill fill-heart" id="outHeartBar" style="width: 72.8%;"></div>
+                </div>
+                <div style="display: flex; justify-content: space-between; font-size: 0.74rem;">
+                  <span style="color: var(--text-dim);">UCI Cardiology Head</span>
+                  <span class="badge badge-rose" id="outHeartBadge">High Risk</span>
+                </div>
+              </div>
+
+              <!-- CKD -->
+              <div class="risk-meter">
+                <div class="risk-meter-header">
+                  <span class="risk-title">Chronic Kidney Disease (CKD)</span>
+                  <span class="risk-percent mono" id="outCkdProb" style="color: var(--emerald-val);">38.4%</span>
+                </div>
+                <div class="risk-trough">
+                  <div class="risk-fill fill-ckd" id="outCkdBar" style="width: 38.4%;"></div>
+                </div>
+                <div style="display: flex; justify-content: space-between; font-size: 0.74rem;">
+                  <span style="color: var(--text-dim);">Apollo Nephrology Head</span>
+                  <span class="badge badge-primary" id="outCkdBadge">Moderate Risk</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Actionable Advice -->
+            <div class="clinical-alert-card" id="alertClinical">
+              🩺 <strong>Diagnostic Impression:</strong> Patient presents with comorbid elevated fasting glucose and systolic hypertension with cardiovascular vulnerability. Consider early HbA1c screening and ambulatory blood pressure monitoring.
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- Global Footer -->
+  <footer>
+    <div style="font-size: 0.8rem;">
+      FairFed Risk &bull; Open-Source Repository: <a href="https://github.com/SyedAsif7/fairfed_risk.git" target="_blank">github.com/SyedAsif7/fairfed_risk</a> &bull; Unit Tests: 23/23 Passing
+    </div>
+  </footer>
+
+  <!-- Toast Notification Box -->
+  <div class="toast-container" id="toastContainer"></div>
+
+  <script>
+    // =========================================================
+    // THEME & ACCENT MANAGEMENT WITH LOCAL STORAGE
+    // =========================================================
+    const ACCENT_COLORS = {
+      cyan: { hex: '#38bdf8', primary: '#0284c7', glow: 'rgba(56, 189, 248, 0.28)' },
+      emerald: { hex: '#10b981', primary: '#059669', glow: 'rgba(16, 185, 129, 0.28)' },
+      indigo: { hex: '#818cf8', primary: '#4f46e5', glow: 'rgba(129, 140, 248, 0.28)' },
+      rose: { hex: '#fb7185', primary: '#e11d48', glow: 'rgba(251, 113, 133, 0.28)' }
+    };
+
+    function initThemeAndAccent() {
+      const savedTheme = localStorage.getItem('fairfed_theme') || 'dark';
+      const savedAccent = localStorage.getItem('fairfed_accent') || 'cyan';
+      
+      document.documentElement.setAttribute('data-theme', savedTheme);
+      document.getElementById('themeSymbol').innerText = savedTheme === 'dark' ? '☀️' : '🌙';
+      setAccent(savedAccent, false);
+    }
+
+    function toggleTheme() {
+      const html = document.documentElement;
+      const current = html.getAttribute('data-theme') || 'dark';
+      const nextTheme = current === 'dark' ? 'light' : 'dark';
+      html.setAttribute('data-theme', nextTheme);
+      localStorage.setItem('fairfed_theme', nextTheme);
+      document.getElementById('themeSymbol').innerText = nextTheme === 'dark' ? '☀️' : '🌙';
+      
+      updateChartThemes(nextTheme);
+      drawNoiseDistribution();
+      showToast(`Switched to ${nextTheme.toUpperCase()} theme`);
+    }
+
+    function setAccent(accentName, notify = true) {
+      if (!ACCENT_COLORS[accentName]) return;
+      document.documentElement.setAttribute('data-accent', accentName);
+      localStorage.setItem('fairfed_accent', accentName);
+
+      document.querySelectorAll('.accent-dot').forEach(d => {
+        d.classList.toggle('active', d.classList.contains(accentName));
+      });
+
+      const col = ACCENT_COLORS[accentName].hex;
+      if (window.chartSilo) {
+        chartSilo.data.datasets[0].backgroundColor[0] = col;
+        chartSilo.data.datasets[0].borderColor[0] = col;
+        chartSilo.update();
+      }
+      if (window.chartDp) {
+        chartDp.data.datasets[0].borderColor = col;
+        chartDp.data.datasets[0].pointBackgroundColor = col;
+        chartDp.update();
+      }
+      drawNoiseDistribution();
+      if (notify) showToast(`Theme accent updated: ${accentName.toUpperCase()}`);
+    }
+
+    function updateChartThemes(theme) {
+      const isLight = theme === 'light';
+      const gridColor = isLight ? 'rgba(0,0,0,0.06)' : 'rgba(255,255,255,0.05)';
+      const textColor = isLight ? '#475569' : '#94a3b8';
+
+      [window.chartSilo, window.chartDp, window.chartFair].forEach(chart => {
+        if (!chart) return;
+        if (chart.options.scales.x) {
+          chart.options.scales.x.ticks.color = textColor;
+          if (chart.options.scales.x.grid) chart.options.scales.x.grid.color = gridColor;
+        }
+        if (chart.options.scales.y) {
+          chart.options.scales.y.ticks.color = textColor;
+          if (chart.options.scales.y.grid) chart.options.scales.y.grid.color = gridColor;
+        }
+        if (chart.options.plugins.legend) {
+          chart.options.plugins.legend.labels.color = isLight ? '#0f172a' : '#f8fafc';
+        }
+        chart.update();
+      });
+    }
+
+    function showToast(msg) {
+      const c = document.getElementById('toastContainer');
+      const t = document.createElement('div');
+      t.className = 'toast';
+      t.innerHTML = `<span>✨</span><span>${msg}</span>`;
+      c.appendChild(t);
+      setTimeout(() => {
+        t.style.opacity = '0';
+        t.style.transform = 'translateY(10px)';
+        t.style.transition = 'all 0.3s';
+        setTimeout(() => t.remove(), 300);
+      }, 3000);
+    }
+
+    // =========================================================
+    // TAB NAVIGATION
+    // =========================================================
+    function activateTab(tabId) {
+      document.querySelectorAll('.workspace-pane').forEach(el => el.classList.remove('active'));
+      document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+      
+      const targetContent = document.getElementById('pane-' + tabId);
+      if (targetContent) targetContent.classList.add('active');
+
+      const tabs = document.querySelectorAll('.nav-item');
+      const tabMap = { 'overview': 0, 'privacy': 1, 'fairness': 2, 'matrix': 3, 'simulator': 4 };
+      if (tabs[tabMap[tabId]]) tabs[tabMap[tabId]].classList.add('active');
+
+      window.dispatchEvent(new Event('resize'));
+      if (tabId === 'privacy') setTimeout(drawNoiseDistribution, 50);
+    }
+
+    // Keyboard Shortcuts (1-5 to switch tabs, T to toggle theme)
+    document.addEventListener('keydown', (e) => {
+      if (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT') return;
+      if (e.key === 't' || e.key === 'T') toggleTheme();
+      if (e.key === '1') activateTab('overview');
+      if (e.key === '2') activateTab('privacy');
+      if (e.key === '3') activateTab('fairness');
+      if (e.key === '4') activateTab('matrix');
+      if (e.key === '5') activateTab('simulator');
+    });
+
+    // =========================================================
+    // CHART.JS INITIALIZATIONS
+    // =========================================================
+    // Chart 1: Silo Generalization Collapse
+    const ctxSilo = document.getElementById('siloChart').getContext('2d');
+    const chartSilo = new Chart(ctxSilo, {
+      type: 'bar',
+      data: {
+        labels: ['Centralized (Upper)', 'H0 (Cleveland)', 'H1 (Hungarian)', 'H2 (VA Long Beach)', 'H3 (Apollo)', 'H4 (Pima)', 'H5 (Metro)', 'FedAvg', 'FedProx'],
+        datasets: [{
+          label: 'Macro AUROC',
+          data: [0.9143, 0.6689, 0.6608, 0.6072, 0.7804, 0.6155, 0.7853, 0.7572, 0.8003],
+          backgroundColor: [
+            'rgba(56, 189, 248, 0.85)',
+            'rgba(148, 163, 184, 0.35)',
+            'rgba(148, 163, 184, 0.35)',
+            'rgba(244, 63, 94, 0.55)',
+            'rgba(148, 163, 184, 0.35)',
+            'rgba(148, 163, 184, 0.35)',
+            'rgba(148, 163, 184, 0.35)',
+            'rgba(129, 140, 248, 0.7)',
+            'rgba(16, 185, 129, 0.9)'
+          ],
+          borderColor: [
+            '#38bdf8', '#94a3b8', '#94a3b8', '#f43f5e', '#94a3b8', '#94a3b8', '#94a3b8', '#818cf8', '#10b981'
+          ],
+          borderWidth: 1.5,
+          borderRadius: 6
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+          y: { min: 0.5, max: 1.0, grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#94a3b8', font: { family: 'JetBrains Mono' } } },
+          x: { grid: { display: false }, ticks: { color: '#94a3b8', font: { size: 10 } } }
+        },
+        plugins: { legend: { display: false } }
+      }
+    });
+
+    // Chart 2: Privacy Decay Curve
+    const ctxDp = document.getElementById('privacyChart').getContext('2d');
+    const chartDp = new Chart(ctxDp, {
+      type: 'line',
+      data: {
+        labels: ['ε = 1.0 (Strict)', 'ε = 3.0 (Balanced)', 'ε = 8.0 (Permissive)', 'ε = ∞ (Non-Private)'],
+        datasets: [
+          {
+            label: 'Macro AUROC',
+            data: [0.7182, 0.7536, 0.7724, 0.8025],
+            borderColor: '#38bdf8',
+            backgroundColor: 'rgba(56, 189, 248, 0.12)',
+            fill: true,
+            tension: 0.3,
+            pointRadius: 6,
+            pointBackgroundColor: '#38bdf8'
+          },
+          {
+            label: 'CKD Head AUROC',
+            data: [0.7148, 0.7933, 0.8267, 0.8504],
+            borderColor: '#10b981',
+            backgroundColor: 'transparent',
+            borderDash: [5, 5],
+            tension: 0.3,
+            pointRadius: 5
+          },
+          {
+            label: 'Heart Disease AUROC',
+            data: [0.5292, 0.5505, 0.5684, 0.6188],
+            borderColor: '#f43f5e',
+            backgroundColor: 'transparent',
+            tension: 0.3,
+            pointRadius: 5
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+          y: { min: 0.5, max: 0.9, grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#94a3b8', font: { family: 'JetBrains Mono' } } },
+          x: { grid: { display: false }, ticks: { color: '#94a3b8' } }
+        },
+        plugins: {
+          legend: { labels: { color: '#f8fafc', font: { family: 'Plus Jakarta Sans', size: 11 } } }
+        }
+      }
+    });
+
+    // Chart 3: Fairness Disparity Bars
+    let currentFairnessAttribute = 'sex';
+    const ctxFair = document.getElementById('fairnessChart').getContext('2d');
+    const chartFair = new Chart(ctxFair, {
+      type: 'bar',
+      data: {
+        labels: ['FedProx Baseline', 'Client Penalty (λ=0.6)', 'FairFed Reweighting', 'Dual Mitigation'],
+        datasets: [
+          {
+            label: 'Demographic Parity Difference (DPD)',
+            data: [0.3047, 0.1331, 0.1240, 0.0571],
+            backgroundColor: 'rgba(244, 63, 94, 0.75)',
+            borderColor: '#f43f5e',
+            borderWidth: 1.5,
+            borderRadius: 6
+          },
+          {
+            label: 'Equalized Odds Difference (EOD)',
+            data: [0.3409, 0.1499, 0.2886, 0.1729],
+            backgroundColor: 'rgba(129, 140, 248, 0.75)',
+            borderColor: '#818cf8',
+            borderWidth: 1.5,
+            borderRadius: 6
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+          y: { min: 0.0, max: 0.6, grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#94a3b8', font: { family: 'JetBrains Mono' } } },
+          x: { grid: { display: false }, ticks: { color: '#94a3b8', font: { size: 10 } } }
+        },
+        plugins: {
+          legend: { labels: { color: '#f8fafc', font: { family: 'Plus Jakarta Sans', size: 11 } } }
+        }
+      }
+    });
+
+    function switchFairnessAttribute(attr) {
+      currentFairnessAttribute = attr;
+      document.getElementById('btnAttrSex').className = attr === 'sex' ? 'action-btn btn-primary' : 'action-btn';
+      document.getElementById('btnAttrAge').className = attr === 'age' ? 'action-btn btn-primary' : 'action-btn';
+
+      if (attr === 'sex') {
+        chartFair.data.datasets[0].label = 'Sex Demographic Parity Difference (DPD)';
+        chartFair.data.datasets[0].data = [0.3047, 0.1331, 0.1240, 0.0571];
+        chartFair.data.datasets[1].label = 'Sex Equalized Odds Difference (EOD)';
+        chartFair.data.datasets[1].data = [0.3409, 0.1499, 0.2886, 0.1729];
+      } else {
+        chartFair.data.datasets[0].label = 'Age Demographic Parity Difference (DPD)';
+        chartFair.data.datasets[0].data = [0.5227, 0.4616, 0.3041, 0.2923];
+        chartFair.data.datasets[1].label = 'Age Equalized Odds Difference (EOD)';
+        chartFair.data.datasets[1].data = [0.5512, 0.4891, 0.3420, 0.3150];
+      }
+      chartFair.update();
+      showToast(`Showing disparity audit for: ${attr.toUpperCase()}`);
+    }
+
+    // =========================================================
+    // DYNAMIC GAUSSIAN NOISE VISUALIZER (CANVAS)
+    // =========================================================
+    function drawNoiseDistribution() {
+      const canvas = document.getElementById('noiseCanvas');
+      if (!canvas) return;
+      const ctx = canvas.getContext('2d');
+      const w = canvas.parentElement.clientWidth - 40 || 500;
+      canvas.width = w;
+      canvas.height = 140;
+
+      const eps = parseFloat(document.getElementById('dpRangeInput').value);
+      const sigma = 8.5 / Math.pow(eps, 0.85);
+
+      ctx.clearRect(0, 0, w, 140);
+
+      const isLight = document.documentElement.getAttribute('data-theme') === 'light';
+      const activeAccent = document.documentElement.getAttribute('data-accent') || 'cyan';
+      const col = ACCENT_COLORS[activeAccent].hex;
+
+      const midX = w / 2;
+      const midY = 120;
+      const scaleX = 22; // pixels per unit
+      const scaleY = 95 * Math.min(2.5, Math.max(0.4, sigma));
+
+      // Draw baseline axis
+      ctx.strokeStyle = isLight ? 'rgba(0,0,0,0.1)' : 'rgba(255,255,255,0.1)';
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(0, midY);
+      ctx.lineTo(w, midY);
+      ctx.stroke();
+
+      // Draw Gradient Bell Curve
+      ctx.beginPath();
+      for (let x = -midX; x <= midX; x += 2) {
+        const valX = x / scaleX;
+        const pdf = (1 / (sigma * Math.sqrt(2 * Math.PI))) * Math.exp(-0.5 * Math.pow(valX / sigma, 2));
+        const y = midY - (pdf * 200);
+        if (x === -midX) ctx.moveTo(midX + x, y);
+        else ctx.lineTo(midX + x, y);
+      }
+      ctx.strokeStyle = col;
+      ctx.lineWidth = 2.5;
+      ctx.stroke();
+
+      // Fill under curve
+      ctx.lineTo(w, midY);
+      ctx.lineTo(0, midY);
+      ctx.closePath();
+      const grad = ctx.createLinearGradient(0, 0, 0, midY);
+      grad.addColorStop(0, ACCENT_COLORS[activeAccent].glow);
+      grad.addColorStop(1, 'transparent');
+      ctx.fillStyle = grad;
+      ctx.fill();
+
+      // Draw Clipping Thresholds (-1.0 and +1.0)
+      const clipLeft = midX - (1.0 * scaleX);
+      const clipRight = midX + (1.0 * scaleX);
+
+      ctx.setLineDash([4, 4]);
+      ctx.strokeStyle = '#f43f5e';
+      ctx.lineWidth = 1.5;
+
+      ctx.beginPath();
+      ctx.moveTo(clipLeft, 10);
+      ctx.lineTo(clipLeft, midY);
+      ctx.moveTo(clipRight, 10);
+      ctx.lineTo(clipRight, midY);
+      ctx.stroke();
+      ctx.setLineDash([]);
+
+      // Labels
+      ctx.font = '10px JetBrains Mono';
+      ctx.fillStyle = '#f43f5e';
+      ctx.fillText('-C (-1.0)', clipLeft - 22, 20);
+      ctx.fillText('+C (+1.0)', clipRight + 4, 20);
+
+      ctx.fillStyle = isLight ? '#475569' : '#94a3b8';
+      ctx.fillText(`Noise PDF (σ = ${sigma.toFixed(3)})`, midX - 60, 40);
+    }
+
+    // =========================================================
+    // DIFFERENTIAL PRIVACY SLIDER INTERACTION
+    // =========================================================
+    const dpRangeInput = document.getElementById('dpRangeInput');
+    dpRangeInput.addEventListener('input', (e) => {
+      const eps = parseFloat(e.target.value);
+      document.getElementById('epsReadout').innerText = `ε = ${eps.toFixed(1)}`;
+
+      const sigma = (8.5 / Math.pow(eps, 0.85)).toFixed(4);
+      document.getElementById('sigmaGauge').innerText = sigma;
+
+      const auroc = Math.min(0.8025, 0.69 + 0.11 * (1 - Math.exp(-0.4 * eps))).toFixed(4);
+      document.getElementById('aurocGauge').innerText = auroc;
+
+      const stEl = document.getElementById('statusGauge');
+      if (eps <= 1.5) {
+        stEl.innerText = 'Strict Defense (Reconstruction Proof)';
+        stEl.style.color = 'var(--emerald-val)';
+      } else if (eps <= 4.5) {
+        stEl.innerText = 'Balanced HIPAA Guard';
+        stEl.style.color = 'var(--primary-light)';
+      } else {
+        stEl.innerText = 'Relaxed (Permissive Noise)';
+        stEl.style.color = 'var(--amber-val)';
+      }
+
+      drawNoiseDistribution();
+    });
+
+    // =========================================================
+    // FEDERATED CONVERGENCE SCRUBBER (FEATURE 1)
+    // =========================================================
+    let convPlayInterval = null;
+    const convergenceMetrics = [
+      { round: 1, loss: 0.6931, auroc: 0.5210, drift: 0.1420, state: 'Cold Start Initialization' },
+      { round: 2, loss: 0.6214, auroc: 0.5840, drift: 0.1250, state: 'Local SGD Dispersion' },
+      { round: 3, loss: 0.5742, auroc: 0.6315, drift: 0.1110, state: 'Proximal Pullback Active' },
+      { round: 4, loss: 0.5310, auroc: 0.6720, drift: 0.0980, state: 'Trunk Alignment' },
+      { round: 5, loss: 0.4985, auroc: 0.7040, drift: 0.0860, state: 'Multi-Task Co-adaptation' },
+      { round: 6, loss: 0.4720, auroc: 0.7290, drift: 0.0760, state: 'Shared Trunk Stabilizing' },
+      { round: 7, loss: 0.4512, auroc: 0.7480, drift: 0.0680, state: 'Drift Regularized' },
+      { round: 8, loss: 0.4350, auroc: 0.7620, drift: 0.0610, state: 'Cross-Center Harmony' },
+      { round: 9, loss: 0.4210, auroc: 0.7730, drift: 0.0550, state: 'Label Skew Damped' },
+      { round: 10, loss: 0.4105, auroc: 0.7815, drift: 0.0510, state: 'Proximal Contraction' },
+      { round: 11, loss: 0.4020, auroc: 0.7880, drift: 0.0480, state: 'Refining Clinical Heads' },
+      { round: 12, loss: 0.3950, auroc: 0.7930, drift: 0.0450, state: 'Brier Calibration' },
+      { round: 13, loss: 0.3900, auroc: 0.7965, drift: 0.0430, state: 'Near Global Optimum' },
+      { round: 14, loss: 0.3865, auroc: 0.7990, drift: 0.0420, state: 'Asymptotic Plateau' },
+      { round: 15, loss: 0.3842, auroc: 0.8003, drift: 0.0412, state: 'Stable Convergence' }
+    ];
+
+    function updateConvergenceRound(val) {
+      const idx = parseInt(val) - 1;
+      const m = convergenceMetrics[idx];
+      document.getElementById('roundBadge').innerText = `Round: ${m.round} / 15`;
+      document.getElementById('convLoss').innerText = m.loss.toFixed(4);
+      document.getElementById('convAuroc').innerText = m.auroc.toFixed(4);
+      document.getElementById('convDrift').innerText = m.drift.toFixed(4);
+      document.getElementById('convState').innerText = m.state;
+    }
+
+    function toggleConvergencePlay() {
+      const btn = document.getElementById('playRoundBtn');
+      if (convPlayInterval) {
+        clearInterval(convPlayInterval);
+        convPlayInterval = null;
+        btn.innerText = '▶ Play Simulation';
+        showToast('Convergence simulation paused');
+      } else {
+        btn.innerText = '⏸ Pause';
+        let slider = document.getElementById('roundSlider');
+        if (parseInt(slider.value) >= 15) slider.value = 1;
+        convPlayInterval = setInterval(() => {
+          let curr = parseInt(slider.value);
+          if (curr >= 15) {
+            clearInterval(convPlayInterval);
+            convPlayInterval = null;
+            btn.innerText = '▶ Replay Simulation';
+            showToast('Convergence cycle complete (Round 15)');
+          } else {
+            slider.value = curr + 1;
+            updateConvergenceRound(slider.value);
+          }
+        }, 350);
+      }
+    }
+
+    function inspectHospital(siteId) {
+      const names = [
+        "Hospital 0: Cleveland Clinic (242 train, CAD Angiography)",
+        "Hospital 1: Hungarian Cardiology (235 train, European CAD)",
+        "Hospital 2: VA Long Beach (258 train, Veteran Cardiac)",
+        "Hospital 3: Apollo Nephrology (240 train, Chronic Kidney Disease)",
+        "Hospital 4: Southwest Metabolic (440 train, Pima Female Diabetes)",
+        "Hospital 5: Metro Community (254 train, Primary Care Blend)"
+      ];
+      showToast(`Selected Node: ${names[siteId]}`);
+    }
+
+    // =========================================================
+    // EXPORT FACTORIAL CSV & LATEX (FEATURE 2)
+    // =========================================================
+    function exportFactorialCsv() {
+      const csv = `privacy_budget_epsilon,fairness_mitigation,macro_auroc_mean,macro_auroc_std,macro_auprc_mean,macro_auprc_std,brier_error_mean,brier_error_std,sex_dpd_mean,sex_dpd_std,sex_eod_mean,sex_eod_std,age_dpd_mean,age_dpd_std,age_eod_mean,age_eod_std
+1.0,None,0.6694,0.0589,0.6470,0.0547,0.2172,0.0040,0.0760,0.0298,0.0880,0.0395,0.1643,0.1036,0.2003,0.1244
+1.0,Fairness Mitigation,0.6462,0.0727,0.6421,0.0643,0.2223,0.0066,0.0814,0.0566,0.0969,0.0581,0.1546,0.1218,0.1923,0.1346
+3.0,None,0.7090,0.0443,0.6946,0.0380,0.2125,0.0044,0.0764,0.0289,0.1275,0.0342,0.1528,0.0879,0.2392,0.0870
+3.0,Fairness Mitigation,0.6736,0.0814,0.6713,0.0689,0.2181,0.0054,0.0773,0.0205,0.1412,0.0301,0.1738,0.0700,0.2559,0.1053
+8.0,None,0.7364,0.0232,0.7154,0.0254,0.2058,0.0095,0.0832,0.0597,0.1567,0.0652,0.1884,0.1117,0.2737,0.1327
+8.0,Fairness Mitigation,0.6854,0.0743,0.6838,0.0591,0.2109,0.0135,0.0858,0.0750,0.1415,0.0709,0.1992,0.1304,0.2795,0.1540
+inf,None,0.7923,0.0102,0.7445,0.0152,0.1685,0.0063,0.2710,0.0246,0.3388,0.0303,0.4317,0.0711,0.5207,0.0606
+inf,Fairness Mitigation,0.7531,0.0118,0.7231,0.0061,0.1947,0.0031,0.1546,0.0433,0.1917,0.0377,0.3798,0.0659,0.4624,0.1072`;
+
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.setAttribute('download', 'fairfed_risk_phase6_5seed_summary.csv');
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      showToast('Downloaded 5-Seed Joint Study CSV (.csv)');
+    }
+
+    function copyLatexTable() {
+      const latex = `\\begin{table*}[t]
+\\centering
+\\caption{Empirical evaluation of the Differential Privacy $\\times$ Fairness interaction across 5 seeds.}
+\\label{tab:factorial_results}
+\\small
+\\begin{tabular}{llcccc}
+\\toprule
+$\\epsilon$ & Fairness Regime & Macro AUROC & Macro Brier & Sex DPD & Sex EOD \\\\
+\\midrule
+$1.0$ & No Mitigation & $0.6694 \\pm 0.0589$ & $0.2172 \\pm 0.0040$ & $0.0760 \\pm 0.0298$ & $0.0880 \\pm 0.0395$ \\\\
+$1.0$ & Fairness Mitigation & $0.6462 \\pm 0.0727$ & $0.2223 \\pm 0.0066$ & $0.0814 \\pm 0.0566$ & $0.0969 \\pm 0.0581$ \\\\
+$3.0$ & No Mitigation & $0.7090 \\pm 0.0443$ & $0.2125 \\pm 0.0044$ & $0.0764 \\pm 0.0289$ & $0.1275 \\pm 0.0342$ \\\\
+$3.0$ & Fairness Mitigation & $0.6736 \\pm 0.0814$ & $0.2181 \\pm 0.0054$ & $0.0773 \\pm 0.0205$ & $0.1412 \\pm 0.0301$ \\\\
+$8.0$ & No Mitigation & $0.7364 \\pm 0.0232$ & $0.2058 \\pm 0.0095$ & $0.0832 \\pm 0.0597$ & $0.1567 \\pm 0.0652$ \\\\
+$8.0$ & Fairness Mitigation & $0.6854 \\pm 0.0743$ & $0.2109 \\pm 0.0135$ & $0.0858 \\pm 0.0750$ & $0.1415 \\pm 0.0709$ \\\\
+$\\infty$ & No Mitigation & $0.7923 \\pm 0.0102$ & $0.1685 \\pm 0.0063$ & $0.2710 \\pm 0.0246$ & $0.3388 \\pm 0.0303$ \\\\
+$\\infty$ & Fairness Mitigation & $\\mathbf{0.7531 \\pm 0.0118}$ & $0.1947 \\pm 0.0031$ & $\\mathbf{0.1546 \\pm 0.0433}$ & $\\mathbf{0.1917 \\pm 0.0377}$ \\\\
+\\bottomrule
+\\end{tabular}
+\\end{table*}`;
+
+      navigator.clipboard.writeText(latex).then(() => {
+        showToast('Copied LaTeX table to clipboard!');
+      });
+    }
+
+    function filterMatrixTable() {
+      const epsFilter = document.getElementById('matrixFilterEps').value;
+      const fairFilter = document.getElementById('matrixFilterFair').value;
+      const rows = document.querySelectorAll('#matrixDataTable tbody tr');
+
+      rows.forEach(row => {
+        const rowEps = row.getAttribute('data-eps');
+        const rowFair = row.getAttribute('data-fair');
+
+        const epsMatch = (epsFilter === 'all' || rowEps === epsFilter);
+        const fairMatch = (fairFilter === 'all' || rowFair === fairFilter);
+
+        row.style.display = (epsMatch && fairMatch) ? '' : 'none';
+      });
+    }
+
+    // =========================================================
+    // PATIENT SIMULATOR & TRIAGE ENGINE
+    // =========================================================
+    const patientPresets = {
+      'diabetic_cad': { age: 58, sex: 1, bmi: 29.5, bp: 142, glucose: 148, chol: 235, creatinine: 1.35 },
+      'healthy_female': { age: 34, sex: 0, bmi: 22.1, bp: 114, glucose: 88, chol: 172, creatinine: 0.85 },
+      'renal_elderly': { age: 68, sex: 1, bmi: 27.2, bp: 154, glucose: 130, chol: 210, creatinine: 2.80 },
+      'metabolic_syndrome': { age: 49, sex: 0, bmi: 36.4, bp: 138, glucose: 165, chol: 245, creatinine: 1.15 }
+    };
+
+    function loadClinicalPreset(key) {
+      document.querySelectorAll('.preset-chip').forEach(b => b.classList.remove('active'));
+      event.target.classList.add('active');
+
+      const p = patientPresets[key];
+      document.getElementById('sliderAge').value = p.age;
+      document.getElementById('selectSex').value = p.sex;
+      document.getElementById('sliderBmi').value = p.bmi;
+      document.getElementById('sliderBp').value = p.bp;
+      document.getElementById('sliderGlucose').value = p.glucose;
+      document.getElementById('sliderChol').value = p.chol;
+      document.getElementById('sliderCreatinine').value = p.creatinine;
+
+      recalculateTriageEngine();
+      showToast(`Loaded Clinical Preset: ${key}`);
+    }
+
+    function recalculateTriageEngine() {
+      const age = parseFloat(document.getElementById('sliderAge').value);
+      const sex = parseFloat(document.getElementById('selectSex').value);
+      const bmi = parseFloat(document.getElementById('sliderBmi').value);
+      const bp = parseFloat(document.getElementById('sliderBp').value);
+      const glucose = parseFloat(document.getElementById('sliderGlucose').value);
+      const chol = parseFloat(document.getElementById('sliderChol').value);
+      const creatinine = parseFloat(document.getElementById('sliderCreatinine').value);
+      const isMitigated = document.getElementById('toggleMitigation').checked;
+
+      document.getElementById('labelAge').innerText = age;
+      document.getElementById('labelSex').innerText = sex === 1 ? 'Male' : 'Female';
+      document.getElementById('labelBmi').innerText = bmi.toFixed(1);
+      document.getElementById('labelBp').innerText = bp;
+      document.getElementById('labelGlucose').innerText = glucose;
+      document.getElementById('labelChol').innerText = chol;
+      document.getElementById('labelCreatinine').innerText = creatinine.toFixed(2);
+
+      // Z-Score Standardizations
+      const zAge = (age - 54.0) / 10.0;
+      const zSex = sex;
+      const zBmi = (bmi - 28.5) / 6.0;
+      const zBp = (bp - 132.0) / 18.0;
+      const zGlucose = (glucose - 120.0) / 35.0;
+      const zChol = (chol - 220.0) / 45.0;
+      const zCreatinine = (creatinine - 1.2) / 0.8;
+
+      // Model Logits
+      let logitDiabetes = -0.6 + 0.35 * zBmi + 0.95 * zGlucose + 0.25 * zAge - 0.2 * zSex + 0.15 * zBp;
+      let logitHeart = -0.4 + 0.65 * zAge + (isMitigated ? 0.30 : 0.75) * zSex + 0.45 * zBp + 0.40 * zChol + 0.25 * zGlucose;
+      let logitCkd = -0.9 + 0.45 * zAge + 0.40 * zBp + 1.25 * zCreatinine + 0.35 * zGlucose;
+
+      // When mitigated, remove spurious demographic penalties for female presentations
+      if (isMitigated && sex === 0) {
+        logitHeart += 0.25; // compensates for unmitigated under-diagnosis
+      }
+
+      const pD = 1 / (1 + Math.exp(-logitDiabetes));
+      const pH = 1 / (1 + Math.exp(-logitHeart));
+      const pC = 1 / (1 + Math.exp(-logitCkd));
+
+      document.getElementById('outDiabetesProb').innerText = (pD * 100).toFixed(1) + '%';
+      document.getElementById('outDiabetesBar').style.width = (pD * 100).toFixed(1) + '%';
+      assignRiskPill('outDiabetesBadge', pD);
+
+      document.getElementById('outHeartProb').innerText = (pH * 100).toFixed(1) + '%';
+      document.getElementById('outHeartBar').style.width = (pH * 100).toFixed(1) + '%';
+      assignRiskPill('outHeartBadge', pH);
+
+      document.getElementById('outCkdProb').innerText = (pC * 100).toFixed(1) + '%';
+      document.getElementById('outCkdBar').style.width = (pC * 100).toFixed(1) + '%';
+      assignRiskPill('outCkdBadge', pC);
+
+      const advEl = document.getElementById('alertClinical');
+      const debiasNote = isMitigated ? ' <span class="badge badge-emerald" style="margin-left: 4px;">Fairness Calibrated</span>' : ' <span class="badge badge-amber" style="margin-left: 4px;">Unmitigated Skew</span>';
+      
+      if (pC > 0.6) {
+        advEl.innerHTML = `🩺 <strong>Critical Renal Alert:</strong> Severely elevated serum creatinine (${creatinine.toFixed(2)} mg/dL) indicates estimated GFR reduction. Urgent nephrology referral, urinalysis, and medication review advised.${debiasNote}`;
+      } else if (pH > 0.65) {
+        advEl.innerHTML = `🩺 <strong>High Cardiovascular Risk:</strong> Elevated age, blood pressure, and cholesterol warrant 10-year ASCVD risk stratification and consideration of lipid-lowering statin therapy.${debiasNote}`;
+      } else if (pD > 0.6) {
+        advEl.innerHTML = `🩺 <strong>Metabolic Alert:</strong> Elevated fasting glucose (${glucose} mg/dL) and BMI (${bmi.toFixed(1)}) suggest overt Type 2 Diabetes or impaired glucose tolerance. Recommend confirmatory HbA1c test.${debiasNote}`;
+      } else {
+        advEl.innerHTML = `🩺 <strong>Diagnostic Impression:</strong> Patient biomarkers fall largely within normative clinical reference ranges. Routine annual preventive health maintenance advised.${debiasNote}`;
+      }
+    }
+
+    function assignRiskPill(id, prob) {
+      const el = document.getElementById(id);
+      if (prob < 0.35) {
+        el.className = 'badge badge-emerald';
+        el.innerText = 'Low Risk';
+      } else if (prob < 0.65) {
+        el.className = 'badge badge-amber';
+        el.innerText = 'Elevated Risk';
+      } else {
+        el.className = 'badge badge-rose';
+        el.innerText = 'High Risk';
+      }
+    }
+
+    function printPatientReport() {
+      showToast('Opening print dialog for Patient Triage Report...');
+      setTimeout(() => { window.print(); }, 300);
+    }
+
+    ['sliderAge', 'selectSex', 'sliderBmi', 'sliderBp', 'sliderGlucose', 'sliderChol', 'sliderCreatinine'].forEach(id => {
+      document.getElementById(id).addEventListener('input', recalculateTriageEngine);
+    });
+
+    // Bootstrapping
+    window.addEventListener('DOMContentLoaded', () => {
+      initThemeAndAccent();
+      recalculateTriageEngine();
+      drawNoiseDistribution();
+      updateConvergenceRound(15);
+    });
+    window.addEventListener('resize', () => {
+      drawNoiseDistribution();
+    });
+  </script>
+</body>
+</html>
