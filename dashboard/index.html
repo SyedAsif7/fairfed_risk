@@ -624,7 +624,6 @@
     <div class="nav-tab" onclick="switchTab('fairness')">⚖️ Fairness & Equity Audit</div>
     <div class="nav-tab" onclick="switchTab('matrix')">🔬 Joint Factorial Matrix (5 Seeds)</div>
     <div class="nav-tab" onclick="switchTab('simulator')">🩺 Live Patient Risk Simulator</div>
-    <div class="nav-tab" onclick="switchTab('whitepaper')">📑 Scientific Report & Docs</div>
   </nav>
 
   <main class="app-main">
@@ -1226,37 +1225,6 @@
       </div>
     </div>
 
-    <!-- ============================================================== -->
-    <!-- TAB 6: SCIENTIFIC WHITEPAPER & CITATIONS -->
-    <!-- ============================================================== -->
-    <div id="tab-whitepaper" class="tab-content">
-      <div class="card" style="line-height: 1.8; font-size: 0.9rem; color: var(--text-muted);">
-        <div class="card-header">
-          <div class="card-title">📑 Scholarly Whitepaper Draft & Formal Documentation</div>
-          <span class="tag tag-blue">Draft Specification</span>
-        </div>
-        <p><strong>Title:</strong> FairFed Risk: Privacy-Preserving Federated Learning for Multi-Disease Early Risk Prediction under Subgroup Fairness Constraints</p>
-        <p><strong>Authors:</strong> Senior ML Research Engineering Team &bull; Computational Healthcare & Privacy PPML</p>
-        <p style="margin-top: 1rem;">
-          <strong>Abstract:</strong> Clinical risk prediction models trained across distributed healthcare systems face a fundamental trilemma: predictive utility, patient privacy, and demographic fairness. We formulate a masked multi-task neural trunk with LayerNorm to predict Type 2 Diabetes, CAD, and CKD under local DP-SGD ($\epsilon \in \{1, 3, 8, \infty\}$) and dynamic aggregation reweighting. Evaluating across 2,088 patients and 6 simulated hospitals demonstrates that our dual mitigation pipeline compresses demographic disparity by up to 81.3% while maintaining robust clinical diagnostic utility.
-        </p>
-
-        <div style="background: rgba(0, 0, 0, 0.4); border-radius: 8px; padding: 1.25rem; margin-top: 1.5rem; border: 1px solid var(--border-subtle);">
-          <div style="font-size: 0.78rem; text-transform: uppercase; font-weight: 700; color: var(--primary); margin-bottom: 0.5rem;">
-            BibTeX Citation:
-          </div>
-          <pre class="mono" style="font-size: 0.78rem; color: var(--text-main); overflow-x: auto;">
-@article{fairfedrisk2026,
-  title={FairFed Risk: Privacy-Preserving Federated Learning for Multi-Disease Early Risk Prediction under Subgroup Fairness Constraints},
-  author={Senior ML Research Engineering Team},
-  journal={Computational Healthcare and PPML Initiative},
-  year={2026},
-  url={https://github.com/SyedAsif7/fairfed_risk.git}
-}</pre>
-        </div>
-      </div>
-    </div>
-
   </main>
 
   <!-- Global Footer -->
@@ -1278,7 +1246,7 @@
 
       const tabs = document.querySelectorAll('.nav-tab');
       const tabMap = {
-        'overview': 0, 'privacy': 1, 'fairness': 2, 'matrix': 3, 'simulator': 4, 'whitepaper': 5
+        'overview': 0, 'privacy': 1, 'fairness': 2, 'matrix': 3, 'simulator': 4
       };
       if (tabs[tabMap[tabId]]) tabs[tabMap[tabId]].classList.add('active');
 
