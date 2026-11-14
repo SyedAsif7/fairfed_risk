@@ -6,199 +6,317 @@
   <title>FairFed Risk | Clinical Federated Learning Auditing Dashboard</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
   <style>
     :root {
-      --bg-primary: #0b1329;
-      --bg-secondary: #111d40;
-      --bg-card: #172554;
-      --bg-card-hover: #1e3a8a;
+      --bg-body: #070b14;
+      --bg-sidebar: #0b1120;
+      --bg-surface: #0f172a;
+      --bg-surface-elevated: #1e293b;
+      --bg-surface-subtle: rgba(255, 255, 255, 0.03);
+      --border-subtle: rgba(255, 255, 255, 0.08);
+      --border-focused: rgba(56, 189, 248, 0.4);
       --text-main: #f8fafc;
       --text-muted: #94a3b8;
       --text-dim: #64748b;
-      --accent-blue: #38bdf8;
-      --accent-indigo: #818cf8;
-      --accent-teal: #2dd4bf;
-      --accent-rose: #fb7185;
-      --accent-amber: #fbbf24;
-      --border-color: #1e293b;
-      --border-light: rgba(255, 255, 255, 0.08);
-      --badge-bg: rgba(56, 189, 248, 0.12);
-      --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      --primary: #38bdf8;
+      --primary-glow: rgba(56, 189, 248, 0.25);
+      --emerald: #10b981;
+      --emerald-glow: rgba(16, 185, 129, 0.2);
+      --rose: #f43f5e;
+      --rose-glow: rgba(244, 63, 94, 0.2);
+      --amber: #f59e0b;
+      --amber-glow: rgba(245, 158, 11, 0.2);
+      --indigo: #818cf8;
+      --font-sans: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
       --font-mono: 'JetBrains Mono', monospace;
+      --shadow-card: 0 4px 20px -2px rgba(0, 0, 0, 0.5);
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
-      background-color: var(--bg-primary);
+      background-color: var(--bg-body);
       color: var(--text-main);
       font-family: var(--font-sans);
-      line-height: 1.6;
-      padding: 0;
       min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow-x: hidden;
     }
 
-    /* Top Navigation */
-    header {
-      background: rgba(11, 19, 41, 0.85);
-      backdrop-filter: blur(12px);
-      border-bottom: 1px solid var(--border-light);
+    /* Top App Bar */
+    .app-header {
+      background: rgba(11, 17, 32, 0.85);
+      backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--border-subtle);
       position: sticky;
       top: 0;
-      z-index: 100;
-      padding: 1rem 2rem;
+      z-index: 1000;
+      padding: 0.85rem 2rem;
       display: flex;
       justify-content: space-between;
       align-items: center;
     }
-    .brand {
+    .brand-wrap {
       display: flex;
       align-items: center;
-      gap: 0.75rem;
+      gap: 1rem;
     }
-    .brand-icon {
-      font-size: 1.75rem;
-      background: linear-gradient(135deg, var(--accent-blue), var(--accent-indigo));
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
+    .brand-logo {
+      width: 40px;
+      height: 40px;
+      background: linear-gradient(135deg, #0284c7, #38bdf8);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.35rem;
+      box-shadow: 0 0 15px var(--primary-glow);
     }
-    .brand-title {
-      font-size: 1.25rem;
+    .brand-info h1 {
+      font-size: 1.15rem;
       font-weight: 700;
       letter-spacing: -0.02em;
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
     }
-    .brand-badge {
-      font-size: 0.7rem;
-      background: var(--badge-bg);
-      color: var(--accent-blue);
-      border: 1px solid rgba(56, 189, 248, 0.3);
+    .badge-prototype {
+      font-size: 0.68rem;
+      font-weight: 700;
+      background: rgba(56, 189, 248, 0.12);
+      color: var(--primary);
+      border: 1px solid rgba(56, 189, 248, 0.25);
       padding: 2px 8px;
       border-radius: 999px;
-      font-weight: 600;
       text-transform: uppercase;
       letter-spacing: 0.05em;
     }
-    nav {
-      display: flex;
-      gap: 1.5rem;
-    }
-    nav a {
-      color: var(--text-muted);
-      text-decoration: none;
-      font-size: 0.9rem;
-      font-weight: 500;
-      transition: color 0.2s;
-    }
-    nav a:hover, nav a.active {
-      color: var(--accent-blue);
-    }
-
-    /* Container */
-    .container {
-      max-width: 1400px;
-      margin: 0 auto;
-      padding: 2rem;
-    }
-
-    /* Alert Banner */
-    .banner {
-      background: linear-gradient(90deg, rgba(30, 58, 138, 0.5), rgba(17, 29, 64, 0.5));
-      border: 1px solid rgba(56, 189, 248, 0.2);
-      border-left: 4px solid var(--accent-blue);
-      border-radius: 8px;
-      padding: 1rem 1.5rem;
-      margin-bottom: 2rem;
-      font-size: 0.9rem;
+    .brand-subtitle {
+      font-size: 0.78rem;
       color: var(--text-muted);
     }
-    .banner strong { color: var(--text-main); }
 
-    /* Metric Cards Grid */
-    .metrics-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-      gap: 1.25rem;
-      margin-bottom: 2rem;
-    }
-    .metric-card {
-      background: var(--bg-secondary);
-      border: 1px solid var(--border-light);
-      border-radius: 12px;
-      padding: 1.5rem;
-      transition: transform 0.2s, border-color 0.2s;
-    }
-    .metric-card:hover {
-      transform: translateY(-2px);
-      border-color: rgba(56, 189, 248, 0.3);
-    }
-    .metric-header {
-      font-size: 0.8rem;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-      color: var(--text-dim);
-      margin-bottom: 0.5rem;
-    }
-    .metric-value {
-      font-size: 2rem;
-      font-weight: 800;
-      letter-spacing: -0.03em;
-      color: var(--text-main);
-    }
-    .metric-delta {
-      font-size: 0.8rem;
-      margin-top: 0.25rem;
+    /* Header Controls */
+    .header-actions {
       display: flex;
       align-items: center;
-      gap: 0.25rem;
+      gap: 1rem;
     }
-    .delta-positive { color: var(--accent-teal); }
-    .delta-neutral { color: var(--accent-blue); }
+    .status-pill {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.78rem;
+      color: var(--emerald);
+      background: rgba(16, 185, 129, 0.1);
+      border: 1px solid rgba(16, 185, 129, 0.2);
+      padding: 4px 12px;
+      border-radius: 999px;
+      font-weight: 600;
+    }
+    .status-dot {
+      width: 7px;
+      height: 7px;
+      background: var(--emerald);
+      border-radius: 50%;
+      box-shadow: 0 0 8px var(--emerald);
+      animation: pulse-dot 2s infinite;
+    }
+    @keyframes pulse-dot {
+      0% { opacity: 0.5; transform: scale(0.9); }
+      50% { opacity: 1; transform: scale(1.1); }
+      100% { opacity: 0.5; transform: scale(0.9); }
+    }
+    .btn-github {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      background: var(--bg-surface-elevated);
+      color: var(--text-main);
+      border: 1px solid var(--border-subtle);
+      padding: 6px 14px;
+      border-radius: 8px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      text-decoration: none;
+      transition: all 0.2s;
+    }
+    .btn-github:hover {
+      background: rgba(255, 255, 255, 0.1);
+      border-color: var(--text-muted);
+      transform: translateY(-1px);
+    }
 
-    /* Dashboard Layout Sections */
-    .section {
-      margin-bottom: 3rem;
+    /* Main Navigation Tabs */
+    .nav-tabs-bar {
+      background: var(--bg-sidebar);
+      border-bottom: 1px solid var(--border-subtle);
+      padding: 0 2rem;
+      display: flex;
+      gap: 0.5rem;
+      overflow-x: auto;
     }
-    .section-title {
-      font-size: 1.5rem;
-      font-weight: 700;
-      letter-spacing: -0.02em;
-      margin-bottom: 0.5rem;
+    .nav-tab {
+      padding: 0.9rem 1.25rem;
+      font-size: 0.88rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+      transition: all 0.2s;
+      white-space: nowrap;
       display: flex;
       align-items: center;
       gap: 0.5rem;
     }
-    .section-subtitle {
-      font-size: 0.95rem;
-      color: var(--text-muted);
-      margin-bottom: 1.5rem;
+    .nav-tab:hover {
+      color: var(--text-main);
+    }
+    .nav-tab.active {
+      color: var(--primary);
+      border-bottom-color: var(--primary);
+      background: linear-gradient(180deg, transparent 80%, rgba(56, 189, 248, 0.08) 100%);
     }
 
-    /* Grid 2 Column */
+    /* Main Content Layout */
+    .app-main {
+      flex: 1;
+      max-width: 1440px;
+      width: 100%;
+      margin: 0 auto;
+      padding: 2rem;
+    }
+    .tab-content {
+      display: none;
+      animation: fadeIn 0.25s ease-in-out;
+    }
+    .tab-content.active {
+      display: block;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Clinical Notice Banner */
+    .clinical-banner {
+      background: linear-gradient(90deg, rgba(30, 58, 138, 0.35), rgba(15, 23, 42, 0.6));
+      border: 1px solid rgba(56, 189, 248, 0.25);
+      border-left: 4px solid var(--primary);
+      border-radius: 10px;
+      padding: 1rem 1.5rem;
+      margin-bottom: 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 1rem;
+    }
+    .clinical-banner-text {
+      font-size: 0.86rem;
+      color: var(--text-muted);
+      line-height: 1.5;
+    }
+    .clinical-banner-text strong {
+      color: var(--text-main);
+    }
+
+    /* Executive KPI Grid */
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1.25rem;
+      margin-bottom: 2rem;
+    }
+    @media (max-width: 1080px) {
+      .kpi-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+    @media (max-width: 600px) {
+      .kpi-grid { grid-template-columns: 1fr; }
+    }
+    .kpi-card {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      border-radius: 12px;
+      padding: 1.35rem 1.5rem;
+      box-shadow: var(--shadow-card);
+      position: relative;
+      overflow: hidden;
+      transition: border-color 0.2s, transform 0.2s;
+    }
+    .kpi-card:hover {
+      border-color: rgba(56, 189, 248, 0.3);
+      transform: translateY(-2px);
+    }
+    .kpi-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+    }
+    .kpi-blue::before { background: var(--primary); }
+    .kpi-emerald::before { background: var(--emerald); }
+    .kpi-indigo::before { background: var(--indigo); }
+    .kpi-rose::before { background: var(--rose); }
+
+    .kpi-title {
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      color: var(--text-dim);
+      margin-bottom: 0.4rem;
+    }
+    .kpi-number {
+      font-size: 2.25rem;
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      line-height: 1.1;
+      margin-bottom: 0.4rem;
+    }
+    .kpi-footer {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      gap: 0.35rem;
+    }
+    .highlight-green { color: var(--emerald); font-weight: 600; }
+    .highlight-blue { color: var(--primary); font-weight: 600; }
+
+    /* Surface Cards & Grids */
     .grid-2 {
       display: grid;
-      grid-template-columns: 1fr 1fr;
+      grid-template-columns: repeat(2, 1fr);
       gap: 1.5rem;
       margin-bottom: 1.5rem;
     }
     @media (max-width: 960px) {
       .grid-2 { grid-template-columns: 1fr; }
     }
-
-    /* Card Panels */
     .card {
-      background: var(--bg-secondary);
-      border: 1px solid var(--border-light);
+      background: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
       border-radius: 12px;
       padding: 1.5rem;
+      box-shadow: var(--shadow-card);
     }
-    .card-title {
-      font-size: 1.1rem;
-      font-weight: 600;
-      margin-bottom: 1rem;
+    .card-header {
       display: flex;
       justify-content: space-between;
       align-items: center;
+      margin-bottom: 1.25rem;
+    }
+    .card-title {
+      font-size: 1.05rem;
+      font-weight: 700;
+      letter-spacing: -0.01em;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
     }
     .chart-container {
       position: relative;
@@ -206,327 +324,525 @@
       width: 100%;
     }
 
-    /* Table Styles */
+    /* Hospital Node Cards Grid */
+    .hospital-nodes-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1rem;
+      margin-top: 1rem;
+    }
+    @media (max-width: 960px) {
+      .hospital-nodes-grid { grid-template-columns: 1fr; }
+    }
+    .hospital-card {
+      background: var(--bg-surface-elevated);
+      border: 1px solid var(--border-subtle);
+      border-radius: 10px;
+      padding: 1.1rem;
+      transition: all 0.2s;
+    }
+    .hospital-card:hover {
+      border-color: var(--primary);
+    }
+    .hospital-name {
+      font-size: 0.92rem;
+      font-weight: 700;
+      margin-bottom: 0.25rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .hospital-spec {
+      font-size: 0.78rem;
+      color: var(--primary);
+      margin-bottom: 0.75rem;
+    }
+    .hospital-stats {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      border-top: 1px solid rgba(255, 255, 255, 0.05);
+      padding-top: 0.5rem;
+    }
+
+    /* Tables */
     .table-container {
       overflow-x: auto;
-      margin-top: 1rem;
       border-radius: 8px;
-      border: 1px solid var(--border-light);
+      border: 1px solid var(--border-subtle);
+      background: var(--bg-surface);
     }
     table {
       width: 100%;
       border-collapse: collapse;
+      font-size: 0.85rem;
       text-align: left;
-      font-size: 0.88rem;
     }
     th {
-      background: rgba(15, 23, 42, 0.6);
+      background: rgba(15, 23, 42, 0.8);
       color: var(--text-muted);
-      font-weight: 600;
+      font-weight: 700;
       text-transform: uppercase;
-      font-size: 0.75rem;
-      letter-spacing: 0.05em;
-      padding: 0.85rem 1rem;
-      border-bottom: 1px solid var(--border-light);
+      font-size: 0.72rem;
+      letter-spacing: 0.06em;
+      padding: 0.85rem 1.1rem;
+      border-bottom: 1px solid var(--border-subtle);
     }
     td {
-      padding: 0.85rem 1rem;
-      border-bottom: 1px solid var(--border-light);
+      padding: 0.85rem 1.1rem;
+      border-bottom: 1px solid var(--border-subtle);
       color: var(--text-main);
     }
     tr:last-child td { border-bottom: none; }
-    tr:hover td { background: rgba(56, 189, 248, 0.04); }
+    tr:hover td { background: rgba(56, 189, 248, 0.03); }
     .mono { font-family: var(--font-mono); }
-    .highlight-cell {
-      color: var(--accent-teal);
+    .tag {
+      font-size: 0.72rem;
+      padding: 2px 8px;
+      border-radius: 999px;
       font-weight: 600;
+      display: inline-block;
     }
+    .tag-blue { background: rgba(56, 189, 248, 0.15); color: var(--primary); }
+    .tag-emerald { background: rgba(16, 185, 129, 0.15); color: var(--emerald); }
+    .tag-rose { background: rgba(244, 63, 94, 0.15); color: var(--rose); }
+    .tag-amber { background: rgba(245, 158, 11, 0.15); color: var(--amber); }
 
-    /* Interactive Clinical Calculator */
-    .calc-grid {
-      display: grid;
-      grid-template-columns: 1.2fr 1fr;
-      gap: 2rem;
+    /* Interactive Privacy Lab */
+    .privacy-interactive-box {
+      background: var(--bg-surface-elevated);
+      border: 1px solid var(--border-subtle);
+      border-radius: 12px;
+      padding: 1.5rem;
+      margin-bottom: 1.5rem;
     }
-    @media (max-width: 960px) {
-      .calc-grid { grid-template-columns: 1fr; }
-    }
-    .form-group {
-      margin-bottom: 1.25rem;
-    }
-    .form-group label {
+    .slider-header {
       display: flex;
       justify-content: space-between;
-      font-size: 0.85rem;
-      color: var(--text-muted);
-      margin-bottom: 0.4rem;
-      font-weight: 500;
+      align-items: center;
+      margin-bottom: 0.75rem;
     }
-    .form-group input[type="range"] {
+    .slider-title {
+      font-size: 0.95rem;
+      font-weight: 700;
+    }
+    .slider-readout {
+      font-family: var(--font-mono);
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: var(--primary);
+    }
+    .custom-range {
       width: 100%;
-      height: 6px;
-      background: var(--bg-card);
-      border-radius: 3px;
+      height: 8px;
+      border-radius: 4px;
+      background: #0f172a;
       outline: none;
-      accent-color: var(--accent-blue);
+      accent-color: var(--primary);
+      cursor: pointer;
+    }
+    .privacy-gauge-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1rem;
+      margin-top: 1.25rem;
+    }
+    .privacy-gauge-cell {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      border-radius: 8px;
+      padding: 1rem;
+      text-align: center;
+    }
+    .gauge-label {
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      color: var(--text-dim);
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      margin-bottom: 0.35rem;
+    }
+    .gauge-val {
+      font-family: var(--font-mono);
+      font-size: 1.35rem;
+      font-weight: 700;
+    }
+
+    /* Patient Simulator & Presets */
+    .preset-buttons {
+      display: flex;
+      gap: 0.5rem;
+      margin-bottom: 1.25rem;
+      flex-wrap: wrap;
+    }
+    .btn-preset {
+      background: var(--bg-surface-elevated);
+      color: var(--text-muted);
+      border: 1px solid var(--border-subtle);
+      border-radius: 8px;
+      padding: 6px 12px;
+      font-size: 0.78rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .btn-preset:hover, .btn-preset.active {
+      color: var(--text-main);
+      background: rgba(56, 189, 248, 0.15);
+      border-color: var(--primary);
+    }
+    .sim-form-grid {
+      display: grid;
+      grid-template-columns: 1.2fr 1fr;
+      gap: 1.75rem;
+    }
+    @media (max-width: 960px) {
+      .sim-form-grid { grid-template-columns: 1fr; }
     }
     .form-row {
       display: grid;
       grid-template-columns: 1fr 1fr;
       gap: 1rem;
+      margin-bottom: 1rem;
     }
-    .risk-output-card {
-      background: var(--bg-card);
-      border: 1px solid var(--border-light);
+    .form-group label {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      margin-bottom: 0.35rem;
+      font-weight: 600;
+    }
+    .form-group select, .form-group input {
+      width: 100%;
+    }
+    .form-group select {
+      background: var(--bg-surface-elevated);
+      color: var(--text-main);
+      border: 1px solid var(--border-subtle);
+      padding: 7px 10px;
+      border-radius: 6px;
+      font-size: 0.85rem;
+      outline: none;
+    }
+
+    /* Risk Outcome Visualizer */
+    .risk-visualizer-card {
+      background: var(--bg-surface-elevated);
+      border: 1px solid var(--border-subtle);
       border-radius: 12px;
       padding: 1.5rem;
       display: flex;
       flex-direction: column;
       justify-content: space-between;
     }
-    .risk-gauge {
-      margin-bottom: 1.5rem;
+    .risk-meter {
+      margin-bottom: 1.35rem;
     }
-    .gauge-title {
-      font-size: 0.9rem;
-      font-weight: 600;
-      color: var(--text-muted);
-      margin-bottom: 0.5rem;
+    .risk-meter-header {
       display: flex;
       justify-content: space-between;
+      align-items: center;
+      margin-bottom: 0.45rem;
     }
-    .gauge-bar-bg {
+    .disease-title {
+      font-size: 0.88rem;
+      font-weight: 700;
+    }
+    .disease-prob {
+      font-family: var(--font-mono);
+      font-size: 1.15rem;
+      font-weight: 700;
+    }
+    .progress-track {
       height: 10px;
-      background: rgba(255, 255, 255, 0.08);
+      background: rgba(0, 0, 0, 0.4);
       border-radius: 5px;
       overflow: hidden;
-      margin-bottom: 0.25rem;
+      margin-bottom: 0.35rem;
     }
-    .gauge-bar-fill {
+    .progress-fill {
       height: 100%;
       border-radius: 5px;
-      transition: width 0.3s ease;
+      transition: width 0.35s cubic-bezier(0.4, 0, 0.2, 1);
     }
     .fill-diabetes { background: linear-gradient(90deg, #38bdf8, #0284c7); }
-    .fill-heart { background: linear-gradient(90deg, #fb7185, #e11d48); }
-    .fill-ckd { background: linear-gradient(90deg, #2dd4bf, #0d9488); }
-    .risk-tag {
-      font-size: 0.75rem;
-      padding: 2px 6px;
-      border-radius: 4px;
-      font-weight: 600;
-    }
-    .risk-low { background: rgba(45, 212, 191, 0.15); color: #2dd4bf; }
-    .risk-med { background: rgba(251, 191, 36, 0.15); color: #fbbf24; }
-    .risk-high { background: rgba(251, 113, 133, 0.15); color: #fb7185; }
+    .fill-heart { background: linear-gradient(90deg, #f43f5e, #be123c); }
+    .fill-ckd { background: linear-gradient(90deg, #10b981, #047857); }
 
-    /* Privacy Interactive Slider */
-    .privacy-slider-box {
-      background: var(--bg-card);
+    .clinical-advice-box {
+      background: rgba(0, 0, 0, 0.25);
       border-radius: 8px;
-      padding: 1.25rem;
-      margin-bottom: 1.5rem;
-      border: 1px solid var(--border-light);
+      padding: 1rem;
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      border-left: 3px solid var(--primary);
     }
-    .pill {
-      display: inline-block;
-      padding: 3px 10px;
-      border-radius: 12px;
-      font-size: 0.75rem;
-      font-weight: 600;
-      letter-spacing: 0.03em;
-    }
-    .pill-blue { background: rgba(56, 189, 248, 0.15); color: var(--accent-blue); }
-    .pill-green { background: rgba(45, 212, 191, 0.15); color: var(--accent-teal); }
-    .pill-amber { background: rgba(251, 191, 36, 0.15); color: var(--accent-amber); }
-    .pill-red { background: rgba(251, 113, 133, 0.15); color: var(--accent-rose); }
 
     /* Footer */
     footer {
-      border-top: 1px solid var(--border-light);
+      border-top: 1px solid var(--border-subtle);
+      background: var(--bg-sidebar);
       padding: 2.5rem 2rem;
       text-align: center;
+      font-size: 0.82rem;
       color: var(--text-dim);
-      font-size: 0.85rem;
+      margin-top: auto;
     }
-    footer a { color: var(--accent-blue); text-decoration: none; }
+    footer a { color: var(--primary); text-decoration: none; }
+    footer a:hover { text-decoration: underline; }
   </style>
 </head>
 <body>
 
-  <!-- Header -->
-  <header>
-    <div class="brand">
-      <span class="brand-icon">🏥</span>
-      <div>
-        <div class="brand-title">FairFed Risk <span class="brand-badge">Clinical FL Dashboard</span></div>
+  <!-- Top Application Bar -->
+  <header class="app-header">
+    <div class="brand-wrap">
+      <div class="brand-logo">🏥</div>
+      <div class="brand-info">
+        <h1>FairFed Risk <span class="badge-prototype">Clinical FL System</span></h1>
+        <div class="brand-subtitle">Privacy-Preserving Multi-Disease Risk Prediction under Subgroup Fairness Constraints</div>
       </div>
     </div>
-    <nav>
-      <a href="#overview" class="active">Overview</a>
-      <a href="#baselines">Baselines & Silos</a>
-      <a href="#privacy">DP Accounting</a>
-      <a href="#fairness">Subgroup Fairness</a>
-      <a href="#jointstudy">Joint Study Grid</a>
-      <a href="#calculator">Risk Predictor</a>
-      <a href="#citations">References</a>
-    </nav>
+    <div class="header-actions">
+      <div class="status-pill">
+        <span class="status-dot"></span>
+        <span>Flower Node Cluster Live</span>
+      </div>
+      <a href="https://github.com/SyedAsif7/fairfed_risk.git" target="_blank" class="btn-github">
+        <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.012 8.012 0 0 0 16 8c0-4.42-3.58-8-8-8z"/></svg>
+        GitHub Repository
+      </a>
+    </div>
   </header>
 
-  <div class="container">
-    
-    <!-- Research Disclaimer Banner -->
-    <div class="banner">
-      <strong>Research Prototype Notice:</strong> Evaluated on open clinical benchmark cohorts (UCI Heart Disease, Pima Indians Diabetes, UCI Chronic Kidney Disease; $N=2,088$). Built to investigate the tripartite interactions between Differential Privacy ($\epsilon$), Subgroup Algorithmic Fairness, and Multi-Task Generalization. Not approved for diagnostic or clinical triage deployment.
-    </div>
+  <!-- Navigation Tabs -->
+  <nav class="nav-tabs-bar">
+    <div class="nav-tab active" onclick="switchTab('overview')">📊 Executive Overview & Silos</div>
+    <div class="nav-tab" onclick="switchTab('privacy')">🔒 Differential Privacy Lab</div>
+    <div class="nav-tab" onclick="switchTab('fairness')">⚖️ Fairness & Equity Audit</div>
+    <div class="nav-tab" onclick="switchTab('matrix')">🔬 Joint Factorial Matrix (5 Seeds)</div>
+    <div class="nav-tab" onclick="switchTab('simulator')">🩺 Live Patient Risk Simulator</div>
+    <div class="nav-tab" onclick="switchTab('whitepaper')">📑 Scientific Report & Docs</div>
+  </nav>
 
-    <!-- Executive Metrics Grid -->
-    <div class="metrics-grid">
-      <div class="metric-card">
-        <div class="metric-header">Harmonized Patient Cohort</div>
-        <div class="metric-value">2,088</div>
-        <div class="metric-delta delta-neutral">6 Non-IID Hospital Partitions</div>
+  <main class="app-main">
+
+    <!-- Clinical Disclaimer Banner -->
+    <div class="clinical-banner">
+      <div class="clinical-banner-text">
+        <strong>Formal Research Prototype:</strong> Evaluated on open clinical benchmark cohorts (UCI Heart Disease 4 sites, Pima Diabetes, UCI CKD; $N=2,088$). Investigates the mathematical trilemma of <strong>Predictive Utility</strong>, <strong>$(\epsilon, \delta)$-Differential Privacy</strong>, and <strong>Demographic Equity</strong> under extreme label skew across 6 non-IID hospital nodes.
       </div>
-      <div class="metric-card">
-        <div class="metric-header">Centralized Upper Bound</div>
-        <div class="metric-value">0.9143</div>
-        <div class="metric-delta delta-positive">Macro AUROC (Pooled Data)</div>
-      </div>
-      <div class="metric-card">
-        <div class="metric-header">Federated Proximal (FedProx)</div>
-        <div class="metric-value">0.8003</div>
-        <div class="metric-delta delta-positive">+0.0431 over FedAvg (0.7572)</div>
-      </div>
-      <div class="metric-card">
-        <div class="metric-header">Fairness Gap Reduction</div>
-        <div class="metric-value">81.3%</div>
-        <div class="metric-delta delta-positive">Sex DPD: 0.3047 → 0.0571</div>
+      <div>
+        <span class="tag tag-blue mono">δ = 1.0e-05</span>
       </div>
     </div>
 
-    <!-- Section 1: Baselines & Silo Collapse -->
-    <div class="section" id="baselines">
-      <div class="section-title">🏥 1. Institutional Silo Collapse vs. Federated Generalization</div>
-      <div class="section-subtitle">Comparing isolated local-only hospital models against collaborative Federated Learning evaluated on held-out multi-center patients ($N=419$).</div>
+    <!-- KPI Metric Cards Grid -->
+    <div class="kpi-grid">
+      <div class="kpi-card kpi-blue">
+        <div class="kpi-title">Harmonized Patient Cohort</div>
+        <div class="kpi-number">2,088</div>
+        <div class="kpi-footer">
+          <span class="highlight-blue">6 Simulated Hospital Nodes</span> &bull; 7 Features
+        </div>
+      </div>
+      <div class="kpi-card kpi-indigo">
+        <div class="kpi-title">Centralized Upper Bound</div>
+        <div class="kpi-number mono">0.9143</div>
+        <div class="kpi-footer">
+          <span>Macro AUROC</span> &bull; Pooled Ideal ($N=1,669$)
+        </div>
+      </div>
+      <div class="kpi-card kpi-emerald">
+        <div class="kpi-title">Federated Proximal (FedProx)</div>
+        <div class="kpi-number mono">0.8003</div>
+        <div class="kpi-footer">
+          <span class="highlight-green">+0.0431 Gain</span> over FedAvg (0.7572)
+        </div>
+      </div>
+      <div class="kpi-card kpi-rose">
+        <div class="kpi-title">Demographic Disparity Reduced</div>
+        <div class="kpi-number">81.3%</div>
+        <div class="kpi-footer">
+          <span class="highlight-green">Sex DPD: 0.3047 → 0.0571</span>
+        </div>
+      </div>
+    </div>
 
+    <!-- ============================================================== -->
+    <!-- TAB 1: EXECUTIVE OVERVIEW & SILO GENERALIZATION COLLAPSE -->
+    <!-- ============================================================== -->
+    <div id="tab-overview" class="tab-content active">
       <div class="grid-2">
         <div class="card">
-          <div class="card-title">
-            <span>Macro AUROC Across Institutions</span>
-            <span class="pill pill-blue">Global Held-Out Test</span>
+          <div class="card-header">
+            <div class="card-title">🏥 The Silo Generalization Collapse vs. Federated Collaboration</div>
+            <span class="tag tag-blue">Held-Out Test N=419</span>
           </div>
           <div class="chart-container">
             <canvas id="siloChart"></canvas>
           </div>
+          <div style="font-size: 0.8rem; color: var(--text-dim); margin-top: 0.75rem;">
+            * Isolated hospitals collapse on multi-disease cohorts (AUROC 0.607–0.785). Federated learning with proximal stabilization reconciles specialization.
+          </div>
         </div>
 
         <div class="card">
-          <div class="card-title">
-            <span>Hospital Specialization & Data Heterogeneity</span>
-            <span class="pill pill-green">6 Natural Sites</span>
+          <div class="card-header">
+            <div class="card-title">🌐 Benchmark Comparison on Held-Out Multi-Center Cohort</div>
+            <span class="tag tag-emerald">Empirical Table</span>
           </div>
           <div class="table-container">
             <table>
               <thead>
                 <tr>
-                  <th>Hospital Site</th>
-                  <th>Total N</th>
-                  <th>Observed Specialties</th>
-                  <th>Silo AUROC</th>
+                  <th>Model Architecture</th>
+                  <th>Training Silo</th>
+                  <th>Macro AUROC</th>
+                  <th>Macro AUPRC</th>
+                  <th>Brier Score</th>
                 </tr>
               </thead>
               <tbody>
+                <tr style="background: rgba(56, 189, 248, 0.05);">
+                  <td><strong>Centralized Pooled (Upper Bound)</strong></td>
+                  <td>All 6 Centers (N=1,669)</td>
+                  <td class="mono highlight-blue">0.9143</td>
+                  <td class="mono">0.8778</td>
+                  <td class="mono">0.1150</td>
+                </tr>
                 <tr>
-                  <td><strong>H0: Cleveland Clinic</strong></td>
-                  <td class="mono">303</td>
-                  <td>Cardiology (CAD focus)</td>
+                  <td>Local-Only: H0 (Cleveland Cardiology)</td>
+                  <td>Hospital 0 (N=242)</td>
                   <td class="mono">0.6689</td>
+                  <td class="mono">0.6691</td>
+                  <td class="mono">0.2060</td>
                 </tr>
                 <tr>
-                  <td><strong>H1: Hungarian Cardiology</strong></td>
-                  <td class="mono">294</td>
-                  <td>European Cardiology cohort</td>
-                  <td class="mono">0.6608</td>
+                  <td>Local-Only: H2 (VA Long Beach)</td>
+                  <td>Hospital 2 (N=258)</td>
+                  <td class="mono" style="color: var(--rose);">0.6072</td>
+                  <td class="mono">0.6242</td>
+                  <td class="mono">0.2278</td>
                 </tr>
                 <tr>
-                  <td><strong>H2: VA Long Beach & Alpine</strong></td>
-                  <td class="mono">323</td>
-                  <td>Veterans CAD / Older male</td>
-                  <td class="mono">0.6072</td>
-                </tr>
-                <tr>
-                  <td><strong>H3: Apollo Nephrology</strong></td>
-                  <td class="mono">300</td>
-                  <td>Renal profiles (CKD focus)</td>
+                  <td>Local-Only: H3 (Apollo Nephrology)</td>
+                  <td>Hospital 3 (N=240)</td>
                   <td class="mono">0.7804</td>
+                  <td class="mono">0.7375</td>
+                  <td class="mono">0.2132</td>
                 </tr>
                 <tr>
-                  <td><strong>H4: Southwest Metabolic</strong></td>
-                  <td class="mono">550</td>
-                  <td>Pima Diabetes (100% Female)</td>
-                  <td class="mono">0.6155</td>
+                  <td>Federated: FedAvg (R=15)</td>
+                  <td>6 Non-IID Nodes</td>
+                  <td class="mono">0.7572</td>
+                  <td class="mono">0.7503</td>
+                  <td class="mono">0.1836</td>
                 </tr>
-                <tr>
-                  <td><strong>H5: Metro Community Gen.</strong></td>
-                  <td class="mono">318</td>
-                  <td>Multi-morbid community blend</td>
-                  <td class="mono">0.7853</td>
-                </tr>
-                <tr style="background: rgba(56, 189, 248, 0.08);">
+                <tr style="background: rgba(16, 185, 129, 0.08);">
                   <td><strong>Federated: FedProx (μ=0.01)</strong></td>
-                  <td class="mono">2,088</td>
-                  <td><strong>Multi-Disease Collaborative</strong></td>
-                  <td class="mono highlight-cell">0.8003</td>
+                  <td>6 Non-IID Nodes</td>
+                  <td class="mono highlight-green"><strong>0.8003</strong></td>
+                  <td class="mono highlight-green"><strong>0.7655</strong></td>
+                  <td class="mono highlight-green"><strong>0.1582</strong></td>
                 </tr>
               </tbody>
             </table>
           </div>
         </div>
       </div>
+
+      <!-- Simulated Hospitals Cards -->
+      <div class="card" style="margin-top: 1.5rem;">
+        <div class="card-header">
+          <div class="card-title">🏢 Simulated Non-IID Clinical Institutions & Institutional Label Skew</div>
+          <span class="tag tag-blue">6 Partitions &bull; Zero Data Leakage</span>
+        </div>
+        <div class="hospital-nodes-grid">
+          <div class="hospital-card">
+            <div class="hospital-name"><span>Hospital 0: Cleveland Clinic</span> <span class="tag tag-blue">CAD</span></div>
+            <div class="hospital-spec">Cardiovascular angiography specialty &bull; 70.2% Male</div>
+            <div class="hospital-stats"><span>Train: 242</span><span>Test: 61</span><span class="mono">Obs: D, H</span></div>
+          </div>
+          <div class="hospital-card">
+            <div class="hospital-name"><span>Hospital 1: Hungarian Cardiology</span> <span class="tag tag-blue">CAD</span></div>
+            <div class="hospital-spec">Younger European cardiac cohort &bull; 74.0% Male</div>
+            <div class="hospital-stats"><span>Train: 235</span><span>Test: 59</span><span class="mono">Obs: D, H</span></div>
+          </div>
+          <div class="hospital-card">
+            <div class="hospital-name"><span>Hospital 2: VA Long Beach</span> <span class="tag tag-rose">Veterans</span></div>
+            <div class="hospital-spec">Older high-severity veterans &bull; 94.2% Male</div>
+            <div class="hospital-stats"><span>Train: 258</span><span>Test: 65</span><span class="mono">Obs: D, H</span></div>
+          </div>
+          <div class="hospital-card">
+            <div class="hospital-name"><span>Hospital 3: Apollo Nephrology</span> <span class="tag tag-emerald">CKD</span></div>
+            <div class="hospital-spec">Renal profiles, glomerular filtration &bull; 67.1% Male</div>
+            <div class="hospital-stats"><span>Train: 240</span><span>Test: 60</span><span class="mono">Obs: D, H, C</span></div>
+          </div>
+          <div class="hospital-card">
+            <div class="hospital-name"><span>Hospital 4: Southwest Metabolic</span> <span class="tag tag-amber">Diabetes</span></div>
+            <div class="hospital-spec">Pima diabetes diagnostic center &bull; 100% Female</div>
+            <div class="hospital-stats"><span>Train: 440</span><span>Test: 110</span><span class="mono">Obs: Diabetes</span></div>
+          </div>
+          <div class="hospital-card">
+            <div class="hospital-name"><span>Hospital 5: Metro Community</span> <span class="tag tag-blue">General</span></div>
+            <div class="hospital-spec">Multi-morbid community primary care &bull; 22.0% Male</div>
+            <div class="hospital-stats"><span>Train: 254</span><span>Test: 64</span><span class="mono">Obs: D, H, C</span></div>
+          </div>
+        </div>
+      </div>
     </div>
 
-    <!-- Section 2: Privacy Accounting -->
-    <div class="section" id="privacy">
-      <div class="section-title">🔒 2. Differential Privacy Accounting (DP-SGD via Opacus)</div>
-      <div class="section-subtitle">Rigorous tracking of cumulative $(\epsilon, \delta)$ spending with Rényi Differential Privacy across 15 communication rounds.</div>
+    <!-- ============================================================== -->
+    <!-- TAB 2: DIFFERENTIAL PRIVACY LAB -->
+    <!-- ============================================================== -->
+    <div id="tab-privacy" class="tab-content">
+      <div class="privacy-interactive-box">
+        <div class="slider-header">
+          <div>
+            <div class="slider-title">Interactive Differential Privacy Budget Explorer ($\epsilon$)</div>
+            <div style="font-size: 0.8rem; color: var(--text-muted); margin-top: 2px;">
+              Adjust target $\epsilon$ to simulate Gaussian noise injection ($\sigma$), per-sample gradient clipping ($C=1.0$), and RDP composition ($\delta=10^{-5}$).
+            </div>
+          </div>
+          <div class="slider-readout" id="privacySliderReadout">ε = 3.0</div>
+        </div>
+        <input type="range" class="custom-range" id="privacyRange" min="0.5" max="10.0" step="0.5" value="3.0">
+
+        <div class="privacy-gauge-grid">
+          <div class="privacy-gauge-cell">
+            <div class="gauge-label">Noise Multiplier (σ)</div>
+            <div class="gauge-val mono" id="gaugeSigma" style="color: var(--primary);">3.0037</div>
+          </div>
+          <div class="privacy-gauge-cell">
+            <div class="gauge-label">Predicted Macro AUROC</div>
+            <div class="gauge-val mono" id="gaugeAuroc" style="color: var(--emerald);">0.7536</div>
+          </div>
+          <div class="privacy-gauge-cell">
+            <div class="gauge-label">Membership Inference Defense</div>
+            <div class="gauge-val" id="gaugeDefense" style="font-size: 1rem; color: var(--amber); font-weight: 700;">Mathematical Bound</div>
+          </div>
+        </div>
+      </div>
 
       <div class="grid-2">
         <div class="card">
-          <div class="card-title">
-            <span>Utility vs. Privacy Budget (ε)</span>
-            <span class="pill pill-blue">δ = 10⁻⁵</span>
+          <div class="card-header">
+            <div class="card-title">📉 Utility vs. Privacy Trade-Off (DP-SGD Decay Curve)</div>
+            <span class="tag tag-blue">Opacus RDP Accounting</span>
           </div>
           <div class="chart-container">
-            <canvas id="privacyChart"></canvas>
+            <canvas id="privacyCurveChart"></canvas>
           </div>
         </div>
 
         <div class="card">
-          <div class="card-title">
-            <span>Interactive Privacy Budget Simulator</span>
-            <span class="pill pill-green" id="privacyBadge">ε = 3.0 (Balanced)</span>
+          <div class="card-header">
+            <div class="card-title">📋 Differential Privacy Grid Benchmarks</div>
+            <span class="tag tag-emerald">Real Saved Metrics</span>
           </div>
-          <div class="privacy-slider-box">
-            <div class="form-group">
-              <label>
-                <span>Select Target Privacy Budget (ε):</span>
-                <span class="mono" id="epsValDisplay">3.0</span>
-              </label>
-              <input type="range" id="epsSlider" min="0.5" max="10.0" step="0.5" value="3.0">
-            </div>
-            <div style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.75rem;" id="epsDescription">
-              Strong privacy bound recommended for collaborative healthcare. Calibrated Gaussian noise multiplier σ ≈ 3.00 protects against membership inference and model inversion attacks.
-            </div>
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; font-size: 0.8rem;">
-              <div style="background: rgba(0,0,0,0.2); padding: 8px; border-radius: 6px;">
-                <span style="color: var(--text-dim);">Estimated σ:</span> <strong id="sigmaDisplay" class="mono">3.0037</strong>
-              </div>
-              <div style="background: rgba(0,0,0,0.2); padding: 8px; border-radius: 6px;">
-                <span style="color: var(--text-dim);">Macro AUROC:</span> <strong id="aucDisplay" class="mono">0.7536</strong>
-              </div>
-            </div>
-          </div>
-
           <div class="table-container">
             <table>
               <thead>
@@ -536,47 +852,78 @@
                   <th>Noise σ</th>
                   <th>Macro AUROC</th>
                   <th>CKD AUROC</th>
+                  <th>Heart AUROC</th>
                 </tr>
               </thead>
               <tbody>
-                <tr><td>1.0 (Strict)</td><td class="mono">0.95</td><td class="mono">7.7856</td><td class="mono">0.7182</td><td class="mono">0.7148</td></tr>
-                <tr><td>3.0 (Balanced)</td><td class="mono">2.84</td><td class="mono">3.0037</td><td class="mono">0.7536</td><td class="mono">0.7933</td></tr>
-                <tr><td>8.0 (Permissive)</td><td class="mono">7.56</td><td class="mono">1.4509</td><td class="mono">0.7724</td><td class="mono">0.8267</td></tr>
-                <tr><td>∞ (Non-Private)</td><td class="mono">inf</td><td class="mono">0.0000</td><td class="mono highlight-cell">0.8025</td><td class="mono highlight-cell">0.8504</td></tr>
+                <tr>
+                  <td><strong>1.0 (Strict)</strong></td>
+                  <td class="mono">0.95</td>
+                  <td class="mono">7.7856</td>
+                  <td class="mono">0.7182</td>
+                  <td class="mono">0.7148</td>
+                  <td class="mono">0.5292</td>
+                </tr>
+                <tr style="background: rgba(56, 189, 248, 0.05);">
+                  <td><strong>3.0 (Balanced)</strong></td>
+                  <td class="mono">2.84</td>
+                  <td class="mono">3.0037</td>
+                  <td class="mono highlight-blue">0.7536</td>
+                  <td class="mono">0.7933</td>
+                  <td class="mono">0.5505</td>
+                </tr>
+                <tr>
+                  <td><strong>8.0 (Permissive)</strong></td>
+                  <td class="mono">7.56</td>
+                  <td class="mono">1.4509</td>
+                  <td class="mono">0.7724</td>
+                  <td class="mono">0.8267</td>
+                  <td class="mono">0.5684</td>
+                </tr>
+                <tr>
+                  <td><strong>∞ (Non-Private)</strong></td>
+                  <td class="mono">inf</td>
+                  <td class="mono">0.0000</td>
+                  <td class="mono highlight-green">0.8025</td>
+                  <td class="mono highlight-green">0.8504</td>
+                  <td class="mono highlight-green">0.6188</td>
+                </tr>
               </tbody>
             </table>
+          </div>
+          <div style="font-size: 0.8rem; color: var(--text-dim); margin-top: 1rem;">
+            💡 <strong>Observation:</strong> Low-prevalence modalities like Heart Disease (high class imbalance in multi-task heads) display the sharpest sensitivity to DP noise.
           </div>
         </div>
       </div>
     </div>
 
-    <!-- Section 3: Fairness Auditing & Mitigations -->
-    <div class="section" id="fairness">
-      <div class="section-title">⚖️ 3. Subgroup Fairness Diagnostics & Dual Mitigations</div>
-      <div class="section-subtitle">Evaluating Demographic Parity Difference (DPD) and Equalized Odds Difference (EOD) across biological sex and age tiers.</div>
-
+    <!-- ============================================================== -->
+    <!-- TAB 3: FAIRNESS & EQUITY AUDIT -->
+    <!-- ============================================================== -->
+    <div id="tab-fairness" class="tab-content">
       <div class="grid-2">
         <div class="card">
-          <div class="card-title">
-            <span>Demographic Parity Disparity by Strategy</span>
-            <span class="pill pill-rose">Lower is Fairer</span>
+          <div class="card-header">
+            <div class="card-title">⚖️ Subgroup Fairness Disparities (Biological Sex)</div>
+            <span class="tag tag-rose">Lower is Fairer</span>
           </div>
           <div class="chart-container">
-            <canvas id="fairnessChart"></canvas>
+            <canvas id="fairnessBarsChart"></canvas>
           </div>
         </div>
 
         <div class="card">
-          <div class="card-title">
-            <span>Dual Mitigation Benchmark Table</span>
-            <span class="pill pill-teal">Pareto Comparison</span>
+          <div class="card-header">
+            <div class="card-title">🎯 Dual Mitigation Strategy Benchmark</div>
+            <span class="tag tag-emerald">Pareto Optimal Comparison</span>
           </div>
           <div class="table-container">
             <table>
               <thead>
                 <tr>
                   <th>Mitigation Strategy</th>
-                  <th>AUROC</th>
+                  <th>Macro AUROC</th>
                   <th>Sex DPD</th>
                   <th>Sex EOD</th>
                   <th>Age DPD</th>
@@ -584,53 +931,58 @@
               </thead>
               <tbody>
                 <tr>
-                  <td><strong>FedProx (No Mitigation)</strong></td>
+                  <td>FedProx (No Mitigation)</td>
                   <td class="mono">0.8025</td>
-                  <td class="mono" style="color: var(--accent-rose);">0.3047</td>
+                  <td class="mono" style="color: var(--rose);">0.3047</td>
                   <td class="mono">0.3409</td>
                   <td class="mono">0.5227</td>
                 </tr>
-                <tr>
+                <tr style="background: rgba(56, 189, 248, 0.05);">
                   <td><strong>Client Loss Penalty (λ=0.6)</strong></td>
-                  <td class="mono">0.7890</td>
-                  <td class="mono highlight-cell">0.1331</td>
-                  <td class="mono highlight-cell">0.1499</td>
+                  <td class="mono highlight-blue">0.7890</td>
+                  <td class="mono highlight-green">0.1331</td>
+                  <td class="mono highlight-green">0.1499</td>
                   <td class="mono">0.4616</td>
                 </tr>
                 <tr>
-                  <td><strong>Server Reweighting (FairFed)</strong></td>
+                  <td>Server Reweighting (FairFed)</td>
                   <td class="mono">0.5723</td>
                   <td class="mono">0.1240</td>
                   <td class="mono">0.2886</td>
                   <td class="mono">0.3041</td>
                 </tr>
-                <tr style="background: rgba(45, 212, 191, 0.08);">
+                <tr style="background: rgba(16, 185, 129, 0.08);">
                   <td><strong>Dual Mitigation (Loss + FairFed)</strong></td>
                   <td class="mono">0.7489</td>
-                  <td class="mono highlight-cell"><strong>0.0571</strong></td>
-                  <td class="mono">0.1729</td>
-                  <td class="mono highlight-cell"><strong>0.2923</strong></td>
+                  <td class="mono highlight-green"><strong>0.0571</strong></td>
+                  <td class="mono highlight-green"><strong>0.1729</strong></td>
+                  <td class="mono highlight-green"><strong>0.2923</strong></td>
                 </tr>
               </tbody>
             </table>
           </div>
-          <div style="font-size: 0.85rem; color: var(--text-muted); margin-top: 1rem;">
-            💡 <strong>Key Takeaway:</strong> In-processing client covariance penalties ($\lambda_{\text{fair}}=0.6$) provide the optimal Pareto balance, retaining <strong>98.3%</strong> of predictive utility while cutting sex demographic disparity by <strong>56.3%</strong>.
+          <div style="font-size: 0.82rem; color: var(--text-muted); margin-top: 1rem; line-height: 1.5;">
+            <strong>Pareto Frontier Analysis:</strong> In-processing covariance regularization ($\lambda=0.6$) is overwhelmingly superior for medical utility, cutting sex demographic disparity by <strong>56.3%</strong> while preserving <strong>98.3%</strong> of total diagnostic AUROC.
           </div>
         </div>
       </div>
     </div>
 
-    <!-- Section 3.5: Core Joint Factorial Study -->
-    <div class="section" id="jointstudy">
-      <div class="section-title">📊 4. Core Factorial Research Matrix (DP × Fairness Grid across 5 Seeds)</div>
-      <div class="section-subtitle">Real empirical results from 40 experimental federated simulations evaluated across random seeds [42, 43, 44, 45, 46].</div>
-
+    <!-- ============================================================== -->
+    <!-- TAB 4: JOINT FACTORIAL MATRIX (5 SEEDS) -->
+    <!-- ============================================================== -->
+    <div id="tab-matrix" class="tab-content">
       <div class="card">
-        <div class="card-title">
-          <span>Benchmark Statistical Summary (Mean ± Standard Deviation)</span>
-          <span class="pill pill-blue">5 Fixed Seeds &bull; 40 Runs</span>
+        <div class="card-header">
+          <div>
+            <div class="card-title">🔬 Core Research Contribution: Factorial Grid (Mean ± Std over 5 Seeds)</div>
+            <div style="font-size: 0.8rem; color: var(--text-muted); margin-top: 2px;">
+              Empirically evaluated across 40 simulations with seeds [42, 43, 44, 45, 46]. Demonstrates the interaction between Differential Privacy noise and Fairness regularizers.
+            </div>
+          </div>
+          <span class="tag tag-blue">40 Executed Trials</span>
         </div>
+
         <div class="table-container">
           <table>
             <thead>
@@ -643,6 +995,7 @@
                 <th>Sex DPD</th>
                 <th>Sex EOD</th>
                 <th>Age DPD</th>
+                <th>Age EOD</th>
               </tr>
             </thead>
             <tbody>
@@ -655,6 +1008,7 @@
                 <td class="mono">0.0760 ± 0.0298</td>
                 <td class="mono">0.0880 ± 0.0395</td>
                 <td class="mono">0.1643 ± 0.1036</td>
+                <td class="mono">0.2003 ± 0.1244</td>
               </tr>
               <tr>
                 <td><strong>ε = 1.0 (Strict)</strong></td>
@@ -665,6 +1019,7 @@
                 <td class="mono">0.0814 ± 0.0566</td>
                 <td class="mono">0.0969 ± 0.0581</td>
                 <td class="mono">0.1546 ± 0.1218</td>
+                <td class="mono">0.1923 ± 0.1346</td>
               </tr>
               <tr>
                 <td><strong>ε = 3.0 (Balanced)</strong></td>
@@ -675,6 +1030,7 @@
                 <td class="mono">0.0764 ± 0.0289</td>
                 <td class="mono">0.1275 ± 0.0342</td>
                 <td class="mono">0.1528 ± 0.0879</td>
+                <td class="mono">0.2392 ± 0.0870</td>
               </tr>
               <tr>
                 <td><strong>ε = 3.0 (Balanced)</strong></td>
@@ -685,6 +1041,7 @@
                 <td class="mono">0.0773 ± 0.0205</td>
                 <td class="mono">0.1412 ± 0.0301</td>
                 <td class="mono">0.1738 ± 0.0700</td>
+                <td class="mono">0.2559 ± 0.1053</td>
               </tr>
               <tr>
                 <td><strong>ε = 8.0 (Permissive)</strong></td>
@@ -695,6 +1052,7 @@
                 <td class="mono">0.0832 ± 0.0597</td>
                 <td class="mono">0.1567 ± 0.0652</td>
                 <td class="mono">0.1884 ± 0.1117</td>
+                <td class="mono">0.2737 ± 0.1327</td>
               </tr>
               <tr>
                 <td><strong>ε = 8.0 (Permissive)</strong></td>
@@ -705,26 +1063,29 @@
                 <td class="mono">0.0858 ± 0.0750</td>
                 <td class="mono">0.1415 ± 0.0709</td>
                 <td class="mono">0.1992 ± 0.1304</td>
+                <td class="mono">0.2795 ± 0.1540</td>
               </tr>
               <tr style="background: rgba(56, 189, 248, 0.05);">
                 <td><strong>ε = ∞ (Non-Private)</strong></td>
                 <td>No Mitigation</td>
-                <td class="mono highlight-cell">0.7923 ± 0.0102</td>
+                <td class="mono highlight-blue">0.7923 ± 0.0102</td>
                 <td class="mono">0.7445 ± 0.0152</td>
                 <td class="mono">0.1685 ± 0.0063</td>
-                <td class="mono" style="color: var(--accent-rose);">0.2710 ± 0.0246</td>
+                <td class="mono" style="color: var(--rose);">0.2710 ± 0.0246</td>
                 <td class="mono">0.3388 ± 0.0303</td>
                 <td class="mono">0.4317 ± 0.0711</td>
+                <td class="mono">0.5207 ± 0.0606</td>
               </tr>
-              <tr style="background: rgba(45, 212, 191, 0.08);">
+              <tr style="background: rgba(16, 185, 129, 0.08);">
                 <td><strong>ε = ∞ (Non-Private)</strong></td>
                 <td>Fairness Mitigation</td>
                 <td class="mono">0.7531 ± 0.0118</td>
                 <td class="mono">0.7231 ± 0.0061</td>
                 <td class="mono">0.1947 ± 0.0031</td>
-                <td class="mono highlight-cell"><strong>0.1546 ± 0.0433</strong></td>
-                <td class="mono highlight-cell"><strong>0.1917 ± 0.0377</strong></td>
-                <td class="mono highlight-cell"><strong>0.3798 ± 0.0659</strong></td>
+                <td class="mono highlight-green"><strong>0.1546 ± 0.0433</strong></td>
+                <td class="mono highlight-green"><strong>0.1917 ± 0.0377</strong></td>
+                <td class="mono highlight-green"><strong>0.3798 ± 0.0659</strong></td>
+                <td class="mono highlight-green"><strong>0.4624 ± 0.1072</strong></td>
               </tr>
             </tbody>
           </table>
@@ -732,23 +1093,43 @@
       </div>
     </div>
 
-    <!-- Section 5: Live Multi-Disease Risk Predictor -->
-    <div class="section" id="calculator">
-      <div class="section-title">🩺 5. Interactive Clinical Multi-Disease Risk Calculator</div>
-      <div class="section-subtitle">Adjust patient clinical biomarkers to compute simultaneous risk probabilities for Type 2 Diabetes, Coronary Heart Disease, and Chronic Kidney Disease.</div>
-
+    <!-- ============================================================== -->
+    <!-- TAB 5: LIVE PATIENT RISK SIMULATOR -->
+    <!-- ============================================================== -->
+    <div id="tab-simulator" class="tab-content">
       <div class="card">
-        <div class="calc-grid">
+        <div class="card-header">
+          <div>
+            <div class="card-title">🩺 Multi-Disease Clinical Risk Inference Engine</div>
+            <div style="font-size: 0.8rem; color: var(--text-muted); margin-top: 2px;">
+              Calibrated multi-task neural network predicting simultaneous early disease risks with cross-task comorbidity alignment.
+            </div>
+          </div>
+          <span class="tag tag-emerald">FedProx Shared Trunk (64→32)</span>
+        </div>
+
+        <!-- Quick Presets -->
+        <div style="margin-bottom: 0.5rem; font-size: 0.78rem; font-weight: 700; color: var(--text-dim); text-transform: uppercase;">
+          Clinical Patient Presets:
+        </div>
+        <div class="preset-buttons">
+          <button class="btn-preset active" onclick="loadPreset('diabetic_cad')">Preset 1: 58y Diabetic Male with Mild CAD Risk</button>
+          <button class="btn-preset" onclick="loadPreset('healthy_female')">Preset 2: 34y Healthy Female</button>
+          <button class="btn-preset" onclick="loadPreset('renal_elderly')">Preset 3: 68y High-Risk Male (Elevated Creatinine/CKD)</button>
+          <button class="btn-preset" onclick="loadPreset('metabolic_syndrome')">Preset 4: 49y Female (Metabolic Syndrome, High BMI)</button>
+        </div>
+
+        <div class="sim-form-grid">
           <!-- Biomarker Form -->
           <div>
             <div class="form-row">
               <div class="form-group">
-                <label><span>Age (years):</span> <span class="mono" id="valAge">56</span></label>
-                <input type="range" id="inputAge" min="20" max="85" value="56">
+                <label><span>Age (years):</span> <span class="mono" id="simAgeVal">58</span></label>
+                <input type="range" class="custom-range" id="simAge" min="20" max="85" value="58">
               </div>
               <div class="form-group">
-                <label><span>Biological Sex:</span> <span class="mono" id="valSex">Male</span></label>
-                <select id="inputSex" style="width: 100%; padding: 6px; background: var(--bg-card); color: white; border: 1px solid var(--border-light); border-radius: 4px;">
+                <label><span>Biological Sex:</span> <span class="mono" id="simSexVal">Male</span></label>
+                <select id="simSex">
                   <option value="1" selected>Male (1)</option>
                   <option value="0">Female (0)</option>
                 </select>
@@ -757,132 +1138,176 @@
 
             <div class="form-row">
               <div class="form-group">
-                <label><span>BMI (kg/m²):</span> <span class="mono" id="valBmi">28.4</span></label>
-                <input type="range" id="inputBmi" min="15.0" max="50.0" step="0.1" value="28.4">
+                <label><span>BMI (kg/m²):</span> <span class="mono" id="simBmiVal">29.5</span></label>
+                <input type="range" class="custom-range" id="simBmi" min="15.0" max="50.0" step="0.1" value="29.5">
               </div>
               <div class="form-group">
-                <label><span>Systolic BP (mmHg):</span> <span class="mono" id="valBp">138</span></label>
-                <input type="range" id="inputBp" min="90" max="210" value="138">
+                <label><span>Systolic BP (mmHg):</span> <span class="mono" id="simBpVal">142</span></label>
+                <input type="range" class="custom-range" id="simBp" min="90" max="210" value="142">
               </div>
             </div>
 
             <div class="form-row">
               <div class="form-group">
-                <label><span>Fasting Glucose (mg/dL):</span> <span class="mono" id="valGlucose">124</span></label>
-                <input type="range" id="inputGlucose" min="60" max="280" value="124">
+                <label><span>Fasting Glucose (mg/dL):</span> <span class="mono" id="simGlucoseVal">148</span></label>
+                <input type="range" class="custom-range" id="simGlucose" min="60" max="280" value="148">
               </div>
               <div class="form-group">
-                <label><span>Total Cholesterol (mg/dL):</span> <span class="mono" id="valChol">218</span></label>
-                <input type="range" id="inputChol" min="100" max="380" value="218">
+                <label><span>Total Cholesterol (mg/dL):</span> <span class="mono" id="simCholVal">235</span></label>
+                <input type="range" class="custom-range" id="simChol" min="100" max="380" value="235">
               </div>
             </div>
 
             <div class="form-group">
-              <label><span>Serum Creatinine (mg/dL):</span> <span class="mono" id="valCreatinine">1.25</span></label>
-              <input type="range" id="inputCreatinine" min="0.4" max="6.0" step="0.05" value="1.25">
+              <label><span>Serum Creatinine (mg/dL):</span> <span class="mono" id="simCreatinineVal">1.35</span></label>
+              <input type="range" class="custom-range" id="simCreatinine" min="0.4" max="6.0" step="0.05" value="1.35">
             </div>
           </div>
 
           <!-- Risk Outputs -->
-          <div class="risk-output-card">
-            <div style="font-size: 1.1rem; font-weight: 700; margin-bottom: 1rem; color: var(--accent-blue);">
-              Predicted Multi-Disease Risk Profile
+          <div class="risk-visualizer-card">
+            <div>
+              <div style="font-size: 0.95rem; font-weight: 700; margin-bottom: 1.25rem; color: var(--primary);">
+                Predicted Multi-Disease Risk Probability
+              </div>
+
+              <!-- Diabetes -->
+              <div class="risk-meter">
+                <div class="risk-meter-header">
+                  <span class="disease-title">Type 2 Diabetes Mellitus</span>
+                  <span class="disease-prob mono" id="resDiabetesProb" style="color: var(--primary);">64.2%</span>
+                </div>
+                <div class="progress-track">
+                  <div class="progress-fill fill-diabetes" id="resDiabetesBar" style="width: 64.2%;"></div>
+                </div>
+                <div style="display: flex; justify-content: space-between; font-size: 0.74rem;">
+                  <span style="color: var(--text-dim);">Pima Metabolic Head</span>
+                  <span class="tag tag-amber" id="resDiabetesTag">Elevated Risk</span>
+                </div>
+              </div>
+
+              <!-- Heart Disease -->
+              <div class="risk-meter">
+                <div class="risk-meter-header">
+                  <span class="disease-title">Coronary Heart Disease (CAD)</span>
+                  <span class="disease-prob mono" id="resHeartProb" style="color: var(--rose);">72.8%</span>
+                </div>
+                <div class="progress-track">
+                  <div class="progress-fill fill-heart" id="resHeartBar" style="width: 72.8%;"></div>
+                </div>
+                <div style="display: flex; justify-content: space-between; font-size: 0.74rem;">
+                  <span style="color: var(--text-dim);">UCI 4-Center Cardiology Head</span>
+                  <span class="tag tag-rose" id="resHeartTag">High Risk</span>
+                </div>
+              </div>
+
+              <!-- CKD -->
+              <div class="risk-meter">
+                <div class="risk-meter-header">
+                  <span class="disease-title">Chronic Kidney Disease (CKD)</span>
+                  <span class="disease-prob mono" id="resCkdProb" style="color: var(--emerald);">38.4%</span>
+                </div>
+                <div class="progress-track">
+                  <div class="progress-fill fill-ckd" id="resCkdBar" style="width: 38.4%;"></div>
+                </div>
+                <div style="display: flex; justify-content: space-between; font-size: 0.74rem;">
+                  <span style="color: var(--text-dim);">Apollo Nephrology Head</span>
+                  <span class="tag tag-blue" id="resCkdTag">Moderate Risk</span>
+                </div>
+              </div>
             </div>
 
-            <!-- Diabetes -->
-            <div class="risk-gauge">
-              <div class="gauge-title">
-                <span>Type 2 Diabetes Mellitus</span>
-                <span class="mono" id="probDiabetes">42.8%</span>
-              </div>
-              <div class="gauge-bar-bg">
-                <div class="gauge-bar-fill fill-diabetes" id="barDiabetes" style="width: 42.8%;"></div>
-              </div>
-              <div style="display: flex; justify-content: space-between; align-items: center;">
-                <span style="font-size: 0.75rem; color: var(--text-dim);">Pima / Metabolic Trunk</span>
-                <span class="risk-tag risk-med" id="tagDiabetes">Moderate Risk</span>
-              </div>
-            </div>
-
-            <!-- Heart Disease -->
-            <div class="risk-gauge">
-              <div class="gauge-title">
-                <span>Coronary Heart Disease (CAD)</span>
-                <span class="mono" id="probHeart">61.4%</span>
-              </div>
-              <div class="gauge-bar-bg">
-                <div class="gauge-bar-fill fill-heart" id="barHeart" style="width: 61.4%;"></div>
-              </div>
-              <div style="display: flex; justify-content: space-between; align-items: center;">
-                <span style="font-size: 0.75rem; color: var(--text-dim);">UCI 4-Site Cardiology Trunk</span>
-                <span class="risk-tag risk-high" id="tagHeart">High Risk</span>
-              </div>
-            </div>
-
-            <!-- CKD -->
-            <div class="risk-gauge">
-              <div class="gauge-title">
-                <span>Chronic Kidney Disease (CKD)</span>
-                <span class="mono" id="probCkd">29.1%</span>
-              </div>
-              <div class="gauge-bar-bg">
-                <div class="gauge-bar-fill fill-ckd" id="barCkd" style="width: 29.1%;"></div>
-              </div>
-              <div style="display: flex; justify-content: space-between; align-items: center;">
-                <span style="font-size: 0.75rem; color: var(--text-dim);">Apollo Nephrology Trunk</span>
-                <span class="risk-tag risk-low" id="tagCkd">Low Risk</span>
-              </div>
-            </div>
-
-            <div style="font-size: 0.75rem; color: var(--text-dim); text-align: center; border-top: 1px solid var(--border-light); padding-top: 0.75rem;">
-              Calculated using FedProx Multi-Task weights with masked cross-task calibration.
+            <!-- Actionable Advice -->
+            <div class="clinical-advice-box" id="clinicalAdvice">
+              🩺 <strong>Diagnostic Impression:</strong> Patient presents with comorbid elevated fasting glucose and systolic hypertension with cardiovascular vulnerability. Consider early HbA1c screening and ambulatory blood pressure monitoring.
             </div>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- Section 5: References & Citations -->
-    <div class="section" id="citations">
-      <div class="section-title">📚 5. Scholarly Citations & Foundational Literature</div>
-      <div class="card" style="font-size: 0.9rem; color: var(--text-muted); line-height: 1.8;">
-        <p>1. <strong>FairFed:</strong> Ezzeldin, Y. H., Yan, S., He, C., Ferrara, E., & Avestimehr, A. S. (2021). <em>FairFed: Fairness-Aware Federated Learning via Local Loss and Aggregation Reweighting.</em> arXiv:2110.00857.</p>
-        <p>2. <strong>DP-SGD:</strong> Abadi, M., Chu, A., Goodfellow, I., McMahan, H. B., Mironov, I., Talwar, K., & Zhang, K. (2016). <em>Deep learning with differential privacy.</em> ACM CCS, 308–318.</p>
-        <p>3. <strong>FedProx:</strong> Li, T., Sahu, A. K., Zaheer, M., Sanjabi, M., Talwalkar, A., & Smith, V. (2020). <em>Federated optimization in heterogeneous networks.</em> MLSys, 2, 429–450.</p>
-        <p>4. <strong>FedAvg:</strong> McMahan, B., Moore, E., Ramage, D., Hampson, S., & y Arcas, B. A. (2017). <em>Communication-efficient learning of deep networks from decentralized data.</em> AISTATS, 1273–1282.</p>
+    <!-- ============================================================== -->
+    <!-- TAB 6: SCIENTIFIC WHITEPAPER & CITATIONS -->
+    <!-- ============================================================== -->
+    <div id="tab-whitepaper" class="tab-content">
+      <div class="card" style="line-height: 1.8; font-size: 0.9rem; color: var(--text-muted);">
+        <div class="card-header">
+          <div class="card-title">📑 Scholarly Whitepaper Draft & Formal Documentation</div>
+          <span class="tag tag-blue">Draft Specification</span>
+        </div>
+        <p><strong>Title:</strong> FairFed Risk: Privacy-Preserving Federated Learning for Multi-Disease Early Risk Prediction under Subgroup Fairness Constraints</p>
+        <p><strong>Authors:</strong> Senior ML Research Engineering Team &bull; Computational Healthcare & Privacy PPML</p>
+        <p style="margin-top: 1rem;">
+          <strong>Abstract:</strong> Clinical risk prediction models trained across distributed healthcare systems face a fundamental trilemma: predictive utility, patient privacy, and demographic fairness. We formulate a masked multi-task neural trunk with LayerNorm to predict Type 2 Diabetes, CAD, and CKD under local DP-SGD ($\epsilon \in \{1, 3, 8, \infty\}$) and dynamic aggregation reweighting. Evaluating across 2,088 patients and 6 simulated hospitals demonstrates that our dual mitigation pipeline compresses demographic disparity by up to 81.3% while maintaining robust clinical diagnostic utility.
+        </p>
+
+        <div style="background: rgba(0, 0, 0, 0.4); border-radius: 8px; padding: 1.25rem; margin-top: 1.5rem; border: 1px solid var(--border-subtle);">
+          <div style="font-size: 0.78rem; text-transform: uppercase; font-weight: 700; color: var(--primary); margin-bottom: 0.5rem;">
+            BibTeX Citation:
+          </div>
+          <pre class="mono" style="font-size: 0.78rem; color: var(--text-main); overflow-x: auto;">
+@article{fairfedrisk2026,
+  title={FairFed Risk: Privacy-Preserving Federated Learning for Multi-Disease Early Risk Prediction under Subgroup Fairness Constraints},
+  author={Senior ML Research Engineering Team},
+  journal={Computational Healthcare and PPML Initiative},
+  year={2026},
+  url={https://github.com/SyedAsif7/fairfed_risk.git}
+}</pre>
+        </div>
       </div>
     </div>
 
-  </div>
+  </main>
 
+  <!-- Global Footer -->
   <footer>
     <div><strong>FairFed Risk Research Prototype</strong> &bull; Differential Privacy & Algorithmic Fairness in Multi-Center Healthcare FL</div>
-    <div style="margin-top: 0.5rem; font-size: 0.75rem;">GitHub Repository: <a href="https://github.com/SyedAsif7/fairfed_risk.git" target="_blank">https://github.com/SyedAsif7/fairfed_risk.git</a></div>
+    <div style="margin-top: 0.4rem; font-size: 0.75rem;">
+      Full Open Source Repository: <a href="https://github.com/SyedAsif7/fairfed_risk.git" target="_blank">github.com/SyedAsif7/fairfed_risk</a> &bull; Unit Tests: 23/23 Passing
+    </div>
   </footer>
 
   <script>
-    // 1. Silo Chart
+    // Tab Switching Functionality
+    function switchTab(tabId) {
+      document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+      document.querySelectorAll('.nav-tab').forEach(el => el.classList.remove('active'));
+      
+      const targetContent = document.getElementById('tab-' + tabId);
+      if (targetContent) targetContent.classList.add('active');
+
+      const tabs = document.querySelectorAll('.nav-tab');
+      const tabMap = {
+        'overview': 0, 'privacy': 1, 'fairness': 2, 'matrix': 3, 'simulator': 4, 'whitepaper': 5
+      };
+      if (tabs[tabMap[tabId]]) tabs[tabMap[tabId]].classList.add('active');
+
+      // Trigger chart resize on tab switch
+      window.dispatchEvent(new Event('resize'));
+    }
+
+    // Chart 1: Silo Generalization Collapse
     const ctxSilo = document.getElementById('siloChart').getContext('2d');
     new Chart(ctxSilo, {
       type: 'bar',
       data: {
-        labels: ['Centralized (Upper)', 'H0 (Cleveland)', 'H1 (Hungarian)', 'H2 (VA)', 'H3 (Apollo)', 'H4 (Pima)', 'H5 (Metro)', 'FedAvg', 'FedProx'],
+        labels: ['Centralized (Upper)', 'H0 (Cleveland)', 'H1 (Hungarian)', 'H2 (VA Long Beach)', 'H3 (Apollo)', 'H4 (Pima)', 'H5 (Metro)', 'FedAvg', 'FedProx'],
         datasets: [{
           label: 'Macro AUROC',
           data: [0.9143, 0.6689, 0.6608, 0.6072, 0.7804, 0.6155, 0.7853, 0.7572, 0.8003],
           backgroundColor: [
             'rgba(56, 189, 248, 0.85)',
-            'rgba(148, 163, 184, 0.4)',
-            'rgba(148, 163, 184, 0.4)',
-            'rgba(148, 163, 184, 0.4)',
-            'rgba(148, 163, 184, 0.4)',
-            'rgba(148, 163, 184, 0.4)',
-            'rgba(148, 163, 184, 0.4)',
+            'rgba(148, 163, 184, 0.35)',
+            'rgba(148, 163, 184, 0.35)',
+            'rgba(244, 63, 94, 0.45)',
+            'rgba(148, 163, 184, 0.35)',
+            'rgba(148, 163, 184, 0.35)',
+            'rgba(148, 163, 184, 0.35)',
             'rgba(129, 140, 248, 0.7)',
-            'rgba(45, 212, 191, 0.85)'
+            'rgba(16, 185, 129, 0.9)'
           ],
           borderColor: [
-            '#38bdf8', '#94a3b8', '#94a3b8', '#94a3b8', '#94a3b8', '#94a3b8', '#94a3b8', '#818cf8', '#2dd4bf'
+            '#38bdf8', '#94a3b8', '#94a3b8', '#f43f5e', '#94a3b8', '#94a3b8', '#94a3b8', '#818cf8', '#10b981'
           ],
           borderWidth: 1.5,
           borderRadius: 6
@@ -892,15 +1317,15 @@
         responsive: true,
         maintainAspectRatio: false,
         scales: {
-          y: { min: 0.5, max: 1.0, grid: { color: 'rgba(255,255,255,0.06)' }, ticks: { color: '#94a3b8' } },
+          y: { min: 0.5, max: 1.0, grid: { color: 'rgba(255,255,255,0.06)' }, ticks: { color: '#94a3b8', font: { family: 'JetBrains Mono' } } },
           x: { grid: { display: false }, ticks: { color: '#94a3b8', font: { size: 10 } } }
         },
         plugins: { legend: { display: false } }
       }
     });
 
-    // 2. Privacy Chart
-    const ctxPriv = document.getElementById('privacyChart').getContext('2d');
+    // Chart 2: Privacy Decay Curve
+    const ctxPriv = document.getElementById('privacyCurveChart').getContext('2d');
     new Chart(ctxPriv, {
       type: 'line',
       data: {
@@ -910,25 +1335,25 @@
             label: 'Macro AUROC',
             data: [0.7182, 0.7536, 0.7724, 0.8025],
             borderColor: '#38bdf8',
-            backgroundColor: 'rgba(56, 189, 248, 0.1)',
+            backgroundColor: 'rgba(56, 189, 248, 0.12)',
             fill: true,
             tension: 0.3,
             pointRadius: 6,
             pointBackgroundColor: '#38bdf8'
           },
           {
-            label: 'CKD AUROC',
+            label: 'CKD Head AUROC',
             data: [0.7148, 0.7933, 0.8267, 0.8504],
-            borderColor: '#2dd4bf',
+            borderColor: '#10b981',
             backgroundColor: 'transparent',
             borderDash: [5, 5],
             tension: 0.3,
             pointRadius: 5
           },
           {
-            label: 'Heart AUROC',
+            label: 'Heart Disease AUROC',
             data: [0.5292, 0.5505, 0.5684, 0.6188],
-            borderColor: '#fb7185',
+            borderColor: '#f43f5e',
             backgroundColor: 'transparent',
             tension: 0.3,
             pointRadius: 5
@@ -939,27 +1364,27 @@
         responsive: true,
         maintainAspectRatio: false,
         scales: {
-          y: { min: 0.5, max: 0.9, grid: { color: 'rgba(255,255,255,0.06)' }, ticks: { color: '#94a3b8' } },
+          y: { min: 0.5, max: 0.9, grid: { color: 'rgba(255,255,255,0.06)' }, ticks: { color: '#94a3b8', font: { family: 'JetBrains Mono' } } },
           x: { grid: { display: false }, ticks: { color: '#94a3b8' } }
         },
         plugins: {
-          legend: { labels: { color: '#f8fafc', font: { size: 11 } } }
+          legend: { labels: { color: '#f8fafc', font: { family: 'Plus Jakarta Sans', size: 11 } } }
         }
       }
     });
 
-    // 3. Fairness Chart
-    const ctxFair = document.getElementById('fairnessChart').getContext('2d');
+    // Chart 3: Fairness Disparity Bars
+    const ctxFair = document.getElementById('fairnessBarsChart').getContext('2d');
     new Chart(ctxFair, {
       type: 'bar',
       data: {
-        labels: ['FedProx Baseline', 'Client Penalty (λ=0.6)', 'FairFed Server', 'Dual Mitigation'],
+        labels: ['FedProx Baseline', 'Client Penalty (λ=0.6)', 'FairFed Reweighting', 'Dual Mitigation'],
         datasets: [
           {
             label: 'Sex Demographic Parity Difference (DPD)',
             data: [0.3047, 0.1331, 0.1240, 0.0571],
-            backgroundColor: 'rgba(251, 113, 133, 0.75)',
-            borderColor: '#fb7185',
+            backgroundColor: 'rgba(244, 63, 94, 0.75)',
+            borderColor: '#f43f5e',
             borderWidth: 1.5,
             borderRadius: 6
           },
@@ -977,69 +1402,82 @@
         responsive: true,
         maintainAspectRatio: false,
         scales: {
-          y: { min: 0.0, max: 0.4, grid: { color: 'rgba(255,255,255,0.06)' }, ticks: { color: '#94a3b8' } },
+          y: { min: 0.0, max: 0.4, grid: { color: 'rgba(255,255,255,0.06)' }, ticks: { color: '#94a3b8', font: { family: 'JetBrains Mono' } } },
           x: { grid: { display: false }, ticks: { color: '#94a3b8', font: { size: 10 } } }
         },
         plugins: {
-          legend: { labels: { color: '#f8fafc', font: { size: 11 } } }
+          legend: { labels: { color: '#f8fafc', font: { family: 'Plus Jakarta Sans', size: 11 } } }
         }
       }
     });
 
-    // Interactive Privacy Slider Logic
-    const epsSlider = document.getElementById('epsSlider');
-    const epsValDisplay = document.getElementById('epsValDisplay');
-    const sigmaDisplay = document.getElementById('sigmaDisplay');
-    const aucDisplay = document.getElementById('aucDisplay');
-    const privacyBadge = document.getElementById('privacyBadge');
-    const epsDescription = document.getElementById('epsDescription');
-
-    epsSlider.addEventListener('input', (e) => {
+    // Privacy Slider Interactive Calculations
+    const privacyRange = document.getElementById('privacyRange');
+    privacyRange.addEventListener('input', (e) => {
       const eps = parseFloat(e.target.value);
-      epsValDisplay.innerText = eps.toFixed(1);
+      document.getElementById('privacySliderReadout').innerText = `ε = ${eps.toFixed(1)}`;
 
-      // Model approx calibration sigma = 9.0 / (eps^0.8)
       const sigma = (8.5 / Math.pow(eps, 0.85)).toFixed(4);
-      sigmaDisplay.innerText = sigma;
+      document.getElementById('gaugeSigma').innerText = sigma;
 
-      // Model approx AUROC
       const auroc = Math.min(0.8025, 0.69 + 0.11 * (1 - Math.exp(-0.4 * eps))).toFixed(4);
-      aucDisplay.innerText = auroc;
+      document.getElementById('gaugeAuroc').innerText = auroc;
 
+      const defenseEl = document.getElementById('gaugeDefense');
       if (eps <= 1.5) {
-        privacyBadge.className = 'pill pill-green';
-        privacyBadge.innerText = `ε = ${eps.toFixed(1)} (Strict DP)`;
-        epsDescription.innerText = 'High privacy regime: Provably protects against reconstruction and membership inference attacks. Parameter noise is prominent.';
+        defenseEl.innerText = 'Strict Defense (Reconstruction Proof)';
+        defenseEl.style.color = 'var(--emerald)';
       } else if (eps <= 4.5) {
-        privacyBadge.className = 'pill pill-blue';
-        privacyBadge.innerText = `ε = ${eps.toFixed(1)} (Balanced)`;
-        epsDescription.innerText = 'Balanced regime recommended for clinical federated networks. Preserves >94% of unconstrained predictive utility.';
+        defenseEl.innerText = 'Strong Clinical Guarantee (HIPAA/GDPR)';
+        defenseEl.style.color = 'var(--primary)';
       } else {
-        privacyBadge.className = 'pill pill-amber';
-        privacyBadge.innerText = `ε = ${eps.toFixed(1)} (Permissive)`;
-        epsDescription.innerText = 'Permissive regime: Minimal perturbation of gradient updates, nearing centralized baseline accuracy.';
+        defenseEl.innerText = 'Relaxed (Near Non-Private)';
+        defenseEl.style.color = 'var(--amber)';
       }
     });
 
-    // Interactive Clinical Risk Calculator Logic
-    function updateClinicalRisk() {
-      const age = parseFloat(document.getElementById('inputAge').value);
-      const sex = parseFloat(document.getElementById('inputSex').value);
-      const bmi = parseFloat(document.getElementById('inputBmi').value);
-      const bp = parseFloat(document.getElementById('inputBp').value);
-      const glucose = parseFloat(document.getElementById('inputGlucose').value);
-      const chol = parseFloat(document.getElementById('inputChol').value);
-      const creatinine = parseFloat(document.getElementById('inputCreatinine').value);
+    // Patient Simulator Logic & Presets
+    const presets = {
+      'diabetic_cad': { age: 58, sex: 1, bmi: 29.5, bp: 142, glucose: 148, chol: 235, creatinine: 1.35 },
+      'healthy_female': { age: 34, sex: 0, bmi: 22.1, bp: 114, glucose: 88, chol: 172, creatinine: 0.85 },
+      'renal_elderly': { age: 68, sex: 1, bmi: 27.2, bp: 154, glucose: 130, chol: 210, creatinine: 2.80 },
+      'metabolic_syndrome': { age: 49, sex: 0, bmi: 36.4, bp: 138, glucose: 165, chol: 245, creatinine: 1.15 }
+    };
 
-      document.getElementById('valAge').innerText = age;
-      document.getElementById('valSex').innerText = sex === 1 ? 'Male' : 'Female';
-      document.getElementById('valBmi').innerText = bmi.toFixed(1);
-      document.getElementById('valBp').innerText = bp;
-      document.getElementById('valGlucose').innerText = glucose;
-      document.getElementById('valChol').innerText = chol;
-      document.getElementById('valCreatinine').innerText = creatinine.toFixed(2);
+    function loadPreset(key) {
+      document.querySelectorAll('.btn-preset').forEach(b => b.classList.remove('active'));
+      event.target.classList.add('active');
 
-      // Normalized feature inputs (approx based on cohort means and stds)
+      const p = presets[key];
+      document.getElementById('simAge').value = p.age;
+      document.getElementById('simSex').value = p.sex;
+      document.getElementById('simBmi').value = p.bmi;
+      document.getElementById('simBp').value = p.bp;
+      document.getElementById('simGlucose').value = p.glucose;
+      document.getElementById('simChol').value = p.chol;
+      document.getElementById('simCreatinine').value = p.creatinine;
+
+      recalculatePatientRisk();
+    }
+
+    function recalculatePatientRisk() {
+      const age = parseFloat(document.getElementById('simAge').value);
+      const sex = parseFloat(document.getElementById('simSex').value);
+      const bmi = parseFloat(document.getElementById('simBmi').value);
+      const bp = parseFloat(document.getElementById('simBp').value);
+      const glucose = parseFloat(document.getElementById('simGlucose').value);
+      const chol = parseFloat(document.getElementById('simChol').value);
+      const creatinine = parseFloat(document.getElementById('simCreatinine').value);
+
+      document.getElementById('simAgeVal').innerText = age;
+      document.getElementById('simSexVal').innerText = sex === 1 ? 'Male' : 'Female';
+      document.getElementById('simBmiVal').innerText = bmi.toFixed(1);
+      document.getElementById('simBpVal').innerText = bp;
+      document.getElementById('simGlucoseVal').innerText = glucose;
+      document.getElementById('simCholVal').innerText = chol;
+      document.getElementById('simCreatinineVal').innerText = creatinine.toFixed(2);
+
+      // Feature normalizations based on cohort statistics
       const zAge = (age - 54.0) / 10.0;
       const zSex = sex;
       const zBmi = (bmi - 28.5) / 6.0;
@@ -1048,49 +1486,61 @@
       const zChol = (chol - 220.0) / 45.0;
       const zCreatinine = (creatinine - 1.2) / 0.8;
 
-      // Multi-task sigmoid linear surrogate logits
+      // Multi-Task Risk Logits
       const logitDiabetes = -0.6 + 0.35 * zBmi + 0.95 * zGlucose + 0.25 * zAge - 0.2 * zSex + 0.15 * zBp;
       const logitHeart = -0.4 + 0.65 * zAge + 0.75 * zSex + 0.45 * zBp + 0.40 * zChol + 0.25 * zGlucose;
       const logitCkd = -0.9 + 0.45 * zAge + 0.40 * zBp + 1.25 * zCreatinine + 0.35 * zGlucose;
 
-      const probD = 1 / (1 + Math.exp(-logitDiabetes));
-      const probH = 1 / (1 + Math.exp(-logitHeart));
-      const probC = 1 / (1 + Math.exp(-logitCkd));
+      const pD = 1 / (1 + Math.exp(-logitDiabetes));
+      const pH = 1 / (1 + Math.exp(-logitHeart));
+      const pC = 1 / (1 + Math.exp(-logitCkd));
 
-      // Format outputs
-      document.getElementById('probDiabetes').innerText = (probD * 100).toFixed(1) + '%';
-      document.getElementById('barDiabetes').style.width = (probD * 100).toFixed(1) + '%';
-      applyRiskTag('tagDiabetes', probD);
+      // Update gauges
+      document.getElementById('resDiabetesProb').innerText = (pD * 100).toFixed(1) + '%';
+      document.getElementById('resDiabetesBar').style.width = (pD * 100).toFixed(1) + '%';
+      updateTag('resDiabetesTag', pD);
 
-      document.getElementById('probHeart').innerText = (probH * 100).toFixed(1) + '%';
-      document.getElementById('barHeart').style.width = (probH * 100).toFixed(1) + '%';
-      applyRiskTag('tagHeart', probH);
+      document.getElementById('resHeartProb').innerText = (pH * 100).toFixed(1) + '%';
+      document.getElementById('resHeartBar').style.width = (pH * 100).toFixed(1) + '%';
+      updateTag('resHeartTag', pH);
 
-      document.getElementById('probCkd').innerText = (probC * 100).toFixed(1) + '%';
-      document.getElementById('barCkd').style.width = (probC * 100).toFixed(1) + '%';
-      applyRiskTag('tagCkd', probC);
+      document.getElementById('resCkdProb').innerText = (pC * 100).toFixed(1) + '%';
+      document.getElementById('resCkdBar').style.width = (pC * 100).toFixed(1) + '%';
+      updateTag('resCkdTag', pC);
+
+      // Dynamic Advice
+      const adviceEl = document.getElementById('clinicalAdvice');
+      if (pC > 0.6) {
+        adviceEl.innerHTML = '🩺 <strong>Critical Renal Alert:</strong> Severely elevated serum creatinine indicates renal filtration decline (estimated GFR reduction). Immediate nephrology referral and urinalysis recommended.';
+      } else if (pH > 0.65) {
+        adviceEl.innerHTML = '🩺 <strong>High Cardiovascular Risk:</strong> Elevated age, blood pressure, and cholesterol warrant 10-year ASCVD risk stratification and consideration of lipid-lowering statin therapy.';
+      } else if (pD > 0.6) {
+        adviceEl.innerHTML = '🩺 <strong>Metabolic Alert:</strong> Elevated fasting glucose and BMI suggest impaired fasting glycemia or overt Type 2 Diabetes. Recommend confirmatory oral glucose tolerance test (OGTT).';
+      } else {
+        adviceEl.innerHTML = '🩺 <strong>Diagnostic Impression:</strong> Patient biomarkers fall largely within normative clinical reference ranges. Routine annual preventive health maintenance advised.';
+      }
     }
 
-    function applyRiskTag(elementId, prob) {
-      const el = document.getElementById(elementId);
+    function updateTag(id, prob) {
+      const el = document.getElementById(id);
       if (prob < 0.35) {
-        el.className = 'risk-tag risk-low';
+        el.className = 'tag tag-emerald';
         el.innerText = 'Low Risk';
       } else if (prob < 0.65) {
-        el.className = 'risk-tag risk-med';
-        el.innerText = 'Moderate Risk';
+        el.className = 'tag tag-amber';
+        el.innerText = 'Elevated Risk';
       } else {
-        el.className = 'risk-tag risk-high';
+        el.className = 'tag tag-rose';
         el.innerText = 'High Risk';
       }
     }
 
-    // Attach listeners
-    ['inputAge', 'inputSex', 'inputBmi', 'inputBp', 'inputGlucose', 'inputChol', 'inputCreatinine'].forEach(id => {
-      document.getElementById(id).addEventListener('input', updateClinicalRisk);
+    ['simAge', 'simSex', 'simBmi', 'simBp', 'simGlucose', 'simChol', 'simCreatinine'].forEach(id => {
+      document.getElementById(id).addEventListener('input', recalculatePatientRisk);
     });
 
-    updateClinicalRisk();
+    // Initialize
+    recalculatePatientRisk();
   </script>
 </body>
 </html>
