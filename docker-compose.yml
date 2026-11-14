@@ -1,0 +1,16 @@
+version: '3.8'
+
+services:
+  web-dashboard:
+    build: .
+    command: python -m http.server 8000 --directory dashboard
+    ports:
+      - "8000:8000"
+    restart: unless-stopped
+
+  streamlit-app:
+    build: .
+    command: streamlit run dashboard/app.py --server.port=8501 --server.address=0.0.0.0
+    ports:
+      - "8501:8501"
+    restart: unless-stopped
