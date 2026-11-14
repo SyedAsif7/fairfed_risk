@@ -2,12 +2,15 @@
 
 > **Privacy-Preserving Federated Learning for Multi-Disease Early Risk Prediction under Subgroup Fairness Constraints**
 
+[![Live Demo on Vercel](https://img.shields.io/badge/Live%20Demo-fairfed--risk.vercel.app-000000?style=for-the-badge&logo=vercel&logoColor=white)](https://fairfed-risk.vercel.app)
 [![Python 3.10+](https://img.shields.io/badge/python-3.10%2B-blue.svg)](https://www.python.org/downloads/)
 [![PyTorch](https://img.shields.io/badge/PyTorch-2.0%2B-orange.svg)](https://pytorch.org/)
 [![Flower](https://img.shields.io/badge/Flower-1.4%2B-pink.svg)](https://flower.ai/)
 [![Opacus](https://img.shields.io/badge/Opacus-1.4%2B-green.svg)](https://opacus.ai/)
 [![Fairlearn](https://img.shields.io/badge/Fairlearn-0.9%2B-yellow.svg)](https://fairlearn.org/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-purple.svg)](LICENSE)
+
+🌐 **Live Interactive Web Dashboard**: [https://fairfed-risk.vercel.app](https://fairfed-risk.vercel.app)
 
 *Research Prototype Disclaimer: FairFed Risk is a clinical research prototype evaluated on open-access benchmark cohorts (UCI Heart Disease, Pima Indians Diabetes, UCI Chronic Kidney Disease). It is designed for computational research on privacy and fairness dynamics in healthcare federated learning and has not been clinically validated for direct patient triage or diagnostic prescription.*
 
