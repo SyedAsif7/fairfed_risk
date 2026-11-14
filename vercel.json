@@ -1,8 +1,7 @@
 {
-  "version": 2,
-  "public": false,
+  "outputDirectory": "dashboard",
+  "cleanUrls": true,
   "rewrites": [
-    { "source": "/", "destination": "/dashboard/index.html" },
-    { "source": "/(.*)", "destination": "/dashboard/$1" }
+    { "source": "/", "destination": "/index.html" }
   ]
 }
