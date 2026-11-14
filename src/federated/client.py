@@ -168,8 +168,9 @@ class HospitalFlowerClient(fl.client.NumPyClient):
         num_samples = len(self.hospital_data.train_x)
         avg_loss = float(np.mean(epoch_losses)) if epoch_losses else 0.0
 
-        # Current cumulative privacy budget spent
-        if self.is_dp and self.privacy_engine is not None:
+        # Current cumulative privacy budget spent (only compute expensive RDP accountant when requested)
+        compute_eps = config.get("compute_eps", True)
+        if self.is_dp and self.privacy_engine is not None and compute_eps:
             eps_spent = float(self.privacy_engine.get_epsilon(delta=self.delta))
         else:
             eps_spent = float("inf")

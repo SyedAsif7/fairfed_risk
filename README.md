@@ -78,6 +78,30 @@ pip install -r requirements.txt
 | **Federated: FedAvg**                  | 6 Hospitals ($R=15$) | 0.7572 | 0.7503 | 0.1836 | 0.1882 | 0.4950 |
 | **Federated: FedProx ($\mu=0.01$)**    | 6 Hospitals ($R=15$) | **0.8003** | **0.7655** | **0.1582** | 0.2994 | 0.5331 |
 
+### Core Joint Factorial Study: Differential Privacy $\times$ Fairness Mitigations (Mean $\pm$ Std across 5 Seeds)
+
+| Privacy Budget ($\epsilon$) | Fairness Regime | Macro AUROC | Macro AUPRC | Macro Brier Error | Sex DPD | Sex EOD | Age DPD | Age EOD |
+| :--- | :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
+| **$\epsilon = 1.0$ (Strict)** | No Mitigation | 0.6694 ± 0.0589 | 0.6470 ± 0.0547 | 0.2172 ± 0.0040 | 0.0760 ± 0.0298 | 0.0880 ± 0.0395 | 0.1643 ± 0.1036 | 0.2003 ± 0.1244 |
+| **$\epsilon = 1.0$ (Strict)** | Fairness Mitigation | 0.6462 ± 0.0727 | 0.6421 ± 0.0643 | 0.2223 ± 0.0066 | 0.0814 ± 0.0566 | 0.0969 ± 0.0581 | 0.1546 ± 0.1218 | 0.1923 ± 0.1346 |
+| **$\epsilon = 3.0$ (Balanced)** | No Mitigation | 0.7090 ± 0.0443 | 0.6946 ± 0.0380 | 0.2125 ± 0.0044 | 0.0764 ± 0.0289 | 0.1275 ± 0.0342 | 0.1528 ± 0.0879 | 0.2392 ± 0.0870 |
+| **$\epsilon = 3.0$ (Balanced)** | Fairness Mitigation | 0.6736 ± 0.0814 | 0.6713 ± 0.0689 | 0.2181 ± 0.0054 | 0.0773 ± 0.0205 | 0.1412 ± 0.0301 | 0.1738 ± 0.0700 | 0.2559 ± 0.1053 |
+| **$\epsilon = 8.0$ (Permissive)** | No Mitigation | 0.7364 ± 0.0232 | 0.7154 ± 0.0254 | 0.2058 ± 0.0095 | 0.0832 ± 0.0597 | 0.1567 ± 0.0652 | 0.1884 ± 0.1117 | 0.2737 ± 0.1327 |
+| **$\epsilon = 8.0$ (Permissive)** | Fairness Mitigation | 0.6854 ± 0.0743 | 0.6838 ± 0.0591 | 0.2109 ± 0.0135 | 0.0858 ± 0.0750 | 0.1415 ± 0.0709 | 0.1992 ± 0.1304 | 0.2795 ± 0.1540 |
+| **$\epsilon = \infty$ (Non-Private)** | No Mitigation | 0.7923 ± 0.0102 | 0.7445 ± 0.0152 | 0.1685 ± 0.0063 | 0.2710 ± 0.0246 | 0.3388 ± 0.0303 | 0.4317 ± 0.0711 | 0.5207 ± 0.0606 |
+| **$\epsilon = \infty$ (Non-Private)** | Fairness Mitigation | 0.7531 ± 0.0118 | 0.7231 ± 0.0061 | 0.1947 ± 0.0031 | 0.1546 ± 0.0433 | 0.1917 ± 0.0377 | 0.3798 ± 0.0659 | 0.4624 ± 0.1072 |
+
+---
+
+## Interactive Auditing Dashboard
+
+FairFed Risk provides two modalities for interactive auditing:
+1. **Interactive Web Dashboard**: Open `dashboard/index.html` directly in any web browser to view interactive Chart.js visualizations, explore the DP noise simulator, and test patient biomarkers in the real-time multi-disease risk calculator.
+2. **Streamlit Clinical Application**:
+   ```bash
+   streamlit run dashboard/app.py
+   ```
+
 ---
 
 ## Citation & Acknowledgments

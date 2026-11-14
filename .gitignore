@@ -2,7 +2,10 @@ __pycache__/
 *.py[cod]
 *$py.class
 .pytest_cache/
-mlruns/
-*.log
-.vscode/
-.idea/
+.coverage
+htmlcov/
+.env
+.venv
+env/
+venv/
+ENV/

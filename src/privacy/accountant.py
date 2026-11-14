@@ -5,9 +5,35 @@ using Rényi Differential Privacy (RDP).
 """
 
 from __future__ import annotations
+import functools
 from typing import Optional, Dict, Any
 import numpy as np
 from opacus.accountants import RDPAccountant
+
+
+@functools.lru_cache(maxsize=128)
+def _solve_noise_multiplier(
+    target_epsilon: float,
+    target_delta: float = 1e-5,
+    sample_rate: float = 0.128,
+    total_steps: int = 240,
+) -> float:
+    """Cached solver for DP-SGD noise multiplier."""
+    if target_epsilon == float("inf") or target_epsilon is None or target_epsilon <= 0:
+        return 0.0
+
+    low, high = 0.1, 30.0
+    for _ in range(35):
+        mid = (low + high) / 2.0
+        acc = RDPAccountant()
+        for _ in range(total_steps):
+            acc.step(noise_multiplier=mid, sample_rate=sample_rate)
+        eps = acc.get_epsilon(delta=target_delta)
+        if eps > target_epsilon:
+            low = mid
+        else:
+            high = mid
+    return float(mid)
 
 
 class PrivacyAccountant:
@@ -52,19 +78,9 @@ class PrivacyAccountant:
         target_epsilon at target_delta after total_steps.
         Returns 0.0 if target_epsilon is infinity (non-private).
         """
-        if target_epsilon == float("inf") or target_epsilon is None or target_epsilon <= 0:
-            return 0.0
-
-        low, high = 0.1, 30.0
-        for _ in range(35):
-            mid = (low + high) / 2.0
-            acc = RDPAccountant()
-            for _ in range(total_steps):
-                acc.step(noise_multiplier=mid, sample_rate=sample_rate)
-            eps = acc.get_epsilon(delta=target_delta)
-            if eps > target_epsilon:
-                # Noise too low -> epsilon too high
-                low = mid
-            else:
-                high = mid
-        return float(mid)
+        return _solve_noise_multiplier(
+            target_epsilon=float(target_epsilon),
+            target_delta=float(target_delta),
+            sample_rate=float(round(sample_rate, 5)),
+            total_steps=int(total_steps),
+        )

@@ -1,0 +1,37 @@
+# FairFed Risk - Core Joint Research Study Configuration
+experiment_name: joint_dp_fairness_study
+
+study:
+  seeds: [42, 43, 44, 45, 46]
+  num_rounds: 12
+  local_epochs: 2
+  batch_size: 32
+  learning_rate: 0.003
+  mu: 0.01
+  max_grad_norm: 1.0
+  delta: 1e-5
+  device: cpu
+
+epsilon_tiers:
+  - tier: eps_1.0
+    epsilon: 1.0
+  - tier: eps_3.0
+    epsilon: 3.0
+  - tier: eps_8.0
+    epsilon: 8.0
+  - tier: non_private
+    epsilon: .inf
+
+fairness_regimes:
+  - name: "No Mitigation"
+    lambda_fair: 0.0
+    fairfed_beta: 0.0
+  - name: "Fairness Mitigation"
+    lambda_fair: 0.6
+    fairfed_beta: 0.5
+
+output_dir: results/metrics
+plots_dir: results/plots
+mlflow:
+  tracking_uri: "sqlite:///mlflow.db"
+  experiment_name: "FairFed_Risk_Joint_Study"

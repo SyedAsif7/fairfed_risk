@@ -156,12 +156,6 @@ class FederatedSimulationServer:
             init_eval["macro"]["brier"],
         )
 
-        fit_config = {
-            "local_epochs": self.local_epochs,
-            "mu": self.mu,
-            "lr": self.lr,
-        }
-
         for r in range(1, self.num_rounds + 1):
             client_params_list = []
             client_weights_list = []
@@ -170,14 +164,28 @@ class FederatedSimulationServer:
             client_eval_fairness: Dict[int, float] = {}
 
             # 1. Distribute global model to clients and train locally
-            for hid, client in self.clients.items():
+            is_final_round = (r == self.num_rounds)
+            shared_eps_spent = float("inf")
+
+            for idx, (hid, client) in enumerate(self.clients.items()):
+                fit_config = {
+                    "local_epochs": self.local_epochs,
+                    "mu": self.mu,
+                    "lr": self.lr,
+                    "compute_eps": (is_final_round and idx == 0),
+                }
                 updated_params, num_samples, fit_res = client.fit(
                     parameters=self.global_parameters,
                     config=fit_config,
                 )
                 client_params_list.append(updated_params)
                 client_losses.append(fit_res["train_loss"])
-                client_epsilons.append(fit_res["epsilon_spent"])
+                if is_final_round:
+                    if idx == 0:
+                        shared_eps_spent = fit_res.get("epsilon_spent", float("inf"))
+                    client_epsilons.append(shared_eps_spent)
+                else:
+                    client_epsilons.append(float("inf"))
 
                 # Determine aggregation weight
                 if self.strategy_name == "fairfed" and r > 1:
