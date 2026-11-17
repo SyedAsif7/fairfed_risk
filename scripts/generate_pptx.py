@@ -26,10 +26,10 @@ def create_deck():
     AMBER = RGBColor(245, 158, 11)         # #F59E0B
 
     def set_slide_background(slide):
-        bg = slide.shapes.add_shape(MSO_SHAPE.RECTANGLE, 0, 0, prs.slide_width, prs.slide_height)
-        bg.fill.solid()
-        bg.fill.fore_color.rgb = BG_COLOR
-        bg.line.fill.background() # no line
+        background = slide.background
+        fill = background.fill
+        fill.solid()
+        fill.fore_color.rgb = BG_COLOR
 
     def add_header(slide, category, title, subtitle=None):
         # Category Tag
@@ -682,6 +682,22 @@ def create_deck():
     output_path = r"C:\Users\as\Desktop\FairFed Risk\FairFed_Risk_MTech_Presentation.pptx"
     prs.save(output_path)
     print(f"Presentation saved successfully to {output_path}")
+
+    # Export PDF backup using PowerPoint COM
+    pdf_path = r"C:\Users\as\Desktop\FairFed Risk\FairFed_Risk_MTech_Presentation.pdf"
+    try:
+        import win32com.client
+        import time
+        print("Exporting PDF backup via Microsoft PowerPoint...")
+        powerpoint = win32com.client.Dispatch("PowerPoint.Application")
+        deck = powerpoint.Presentations.Open(os.path.abspath(output_path), WithWindow=False)
+        # 32 = ppSaveAsPDF
+        deck.SaveAs(os.path.abspath(pdf_path), 32)
+        deck.Close()
+        powerpoint.Quit()
+        print(f"PDF backup exported successfully to {pdf_path}")
+    except Exception as e:
+        print(f"Note on PDF export: {e}")
 
 if __name__ == "__main__":
     create_deck()
